@@ -124,31 +124,38 @@ router.post("/login", function (req, res) {
 	});
 });
 
-router.post("/forgotpassword", async function (req, res) {
+router.post("/forgotpassword", async (req, res) => {
 	var email = req.body.email;
+
 	try {
-		await User.updateOne(
+		// console.log(email, "\n----------\nEmail\n");
+
+		let resp = await User.updateOne(
 			{ email: email },
 			{
 				$set: {
 					"profileSecurity.resetPasswordFlag": true,
 					"profileSecurity.dummyPassword": makeid(8),
 				},
-			},
-			function (err, user) {
-				console.log("Dummy password updated");
 			}
 		);
-		await User.findOne({ email: email }, function (err, user) {
-			console.log(user);
-			mail(email, user.profileSecurity.dummyPassword);
+
+		// console.log(resp, "\n\n", email, " \nI am the response\n");
+
+		let user = await User.findOne({
+			email: email,
 		});
+
+		console.log(user, "  ", "\n", email, "\nIam the user after upd\n\n");
+
+		mail(email, user.profileSecurity.dummyPassword, email);
 
 		res.send({
 			success: true,
 			msg: "Password Mail Sent!",
 		});
 	} catch (err) {
+		console.log(err, " \nIam the err occured\n");
 		res.send({
 			success: false,
 			err: err,
