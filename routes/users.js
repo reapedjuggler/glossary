@@ -628,7 +628,7 @@ router.post("/desiredjoblist", async function (req, res) {
 		await ClientJobs.find().then(jobs => {
 			jobs.forEach(job => {
 				// console.log(job.jobTitle)
-				finalArr.push(job.jobTitle + " ( " + job.jobCode + " )");
+				finalArr.push(`${job.jobTitle} ( ${job.jobCode} )`);
 			});
 		});
 
