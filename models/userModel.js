@@ -13,6 +13,7 @@ var db = mongoose.connection;
 
 
 // User Schema
+
 var CandidateSchema = mongoose.Schema({
 	_id:{
 		type:String

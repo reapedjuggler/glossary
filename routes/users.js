@@ -65,6 +65,7 @@ router.get("/login", function (req, res, next) {
 
 router.post("/login", function (req, res) {
 	var email = req.body.email;
+
 	var password = req.body.password;
 
 	User.getUserByEmail(email, function (err, user) {
@@ -103,6 +104,7 @@ router.post("/login", function (req, res) {
 			);
 		} else {
 			// console.log(user.profileSecurity.dummyPassword);
+			console.log("Loggin in \n");
 			if (user.profileSecurity.dummyPassword == password) {
 				console.log("You are now logged in Succesfully!");
 				userData = user;
@@ -130,25 +132,26 @@ router.post("/forgotpassword", async (req, res) => {
 	try {
 		// console.log(email, "\n----------\nEmail\n");
 
-		let resp = await User.updateOne(
-			{ email: email },
-			{
-				$set: {
-					"profileSecurity.resetPasswordFlag": true,
-					"profileSecurity.dummyPassword": makeid(8),
-				},
-			}
-		);
-
+		let tempPass = makeid(8);
 		// console.log(resp, "\n\n", email, " \nI am the response\n");
 
 		let user = await User.findOne({
 			email: email,
 		});
 
-		console.log(user, "  ", "\n", email, "\nIam the user after upd\n\n");
-
 		mail(email, user.profileSecurity.dummyPassword, email);
+
+		let resp = await User.updateOne(
+			{ email: email },
+			{
+				$set: {
+					"profileSecurity.resetPasswordFlag": true, // we should not change it so that reset password works
+					"profileSecurity.dummyPassword": tempPass,
+				},
+			}
+		);
+
+		console.log(resp, "  ", "\n", email, "\nIam the user after upd\n\n");
 
 		res.send({
 			success: true,
@@ -289,7 +292,9 @@ router.post("/editprofile", async function (req, res) {
 
 	try {
 		var data = req.body;
-		// console.log(data[0]);
+		// console.log(data[0], " \n\n Iam dataaaa\n\n");
+		// console.log(data[1], " \n\n Iam dataaaa at index 1\n\n");
+
 		var email = data[0].email;
 		var firstName = data[0].firstname;
 		var lastName = data[0].lastname;
@@ -356,6 +361,16 @@ router.post("/editprofile", async function (req, res) {
 			);
 		}
 
+		let prevId = await User.find({ email: email });
+
+		// console.log(
+		// 	"\n\n\nhahah\n\n",
+		// 	prevId,
+		// 	"\n\n\nhehehe\n\n--------------\n\nId\n\n"
+		// );
+
+		prevId = prevId[0];
+
 		var desiredPositions = data[1].desiredPositions;
 		var relocationWillingnessFlag = data[3].relocationWillingnes;
 		var country = data[2].country;
@@ -377,6 +392,8 @@ router.post("/editprofile", async function (req, res) {
 		var countryPreferences = data[3].countryPreferences;
 
 		var userData = {};
+
+		// 14f6d4bd4d341cc28c28d7705db97afd3dd2b7f657da3c0fe2d074cc8dfbd60c"
 
 		userData.firstName = firstName;
 		userData.lastName = lastName;
@@ -400,10 +417,29 @@ router.post("/editprofile", async function (req, res) {
 		userData.skills = skills;
 		userData.workExperience = workExperience;
 		userData.languages = languages;
-		var profileSecurity = {};
+		userData._id = prevId;
+
+		var tempSec = await User.find({ email: email });
+
+		// console.log(
+		// 	"\n\nsecurity\n\n",
+		// 	tempSec,
+		// 	"\n\nI am prev Security \n\n"
+		// );
+
+		var profileSecurity = tempSec[0].profileSecurity;
 		profileSecurity.lastProfileUpdateAt = event.toISOString();
+
 		userData.profileSecurity = profileSecurity;
+
 		var cv = {};
+
+		// var engCheck, gerCheck;
+		// engCheck = cvEnglish.data ? cvEnglish.data.substr(0, 24) : "";
+		// gerCheck = cvGerman.data ? cvGerman.data.substr(0, 24) : "";
+
+		//  && engCheck != "https://spaces.moyyn.com"
+
 		cv.filename = cvEnglish.fileName;
 		cv.english = cvEnglish.data !== null ? true : false;
 		cv.german = cvGerman.data !== null ? true : false;
@@ -421,37 +457,126 @@ router.post("/editprofile", async function (req, res) {
 
 		// var momatchResult = await momatchFxn(momatchData);
 		// console.log(momatchResult);
+
+		// Job Statistics Part will be shifted to Candidates_C2
 		const resp = await axios.post(momatchUrl, momatchData, {
 			headers: { "Content-Type": "application/json" },
 		});
 		var momatchResult = resp.data;
 
-		var jobStatistics = {};
-		jobStatistics.partner = momatchResult.partner;
-		jobStatistics.client = momatchResult.client;
-		jobStatistics.applied = desiredPositions;
-		jobStatistics.shortlisted = [];
-		jobStatistics.withdrawn = [];
-		jobStatistics.rejected = [];
-		jobStatistics.hired = [];
-		jobStatistics.preferred = [];
-		jobStatistics.recommended = [];
+		// var jobStatistics = {};
+		// jobStatistics.partner = momatchResult.partner;
+		// jobStatistics.client = momatchResult.client;
+		// jobStatistics.applied = desiredPositions;
+		// jobStatistics.shortlisted = [];
+		// jobStatistics.withdrawn = [];
+		// jobStatistics.rejected = [];
+		// jobStatistics.hired = [];
+		// jobStatistics.preferred = [];
+		// jobStatistics.recommended = [];
 
-		userData.jobStatistics = jobStatistics;
+		// userData.jobStatistics = jobStatistics;
 
-		console.log(userData);
-
-		await User.updateOne(
+		// console.log(userData, "\n------------\n Iam User data\n\n");
+		let resp2 = await User.findOneAndUpdate(
 			{ email: email },
-			{ $set: userData },
-			function (err, user) {
-				res.send({
-					success: true,
-					msg: "Updated Successfully",
-				});
-			}
+			{ $set: userData }
 		);
+
+		let tempCheck = "https://spaces.moyyn.com";
+
+		// length --> 24
+
+		if (
+			cvEnglish.data !== null &&
+			cvEnglish.data.substr(0, 24) != tempCheck &&
+			cvEnglish.data.endsWith(".pdf") === false
+		) {
+			console.log("Iam inside English\n");
+			fs.writeFile(
+				"cvData/English_CV/" + cvEnglish.fileName,
+				decodedBase64English,
+				"binary",
+				function (err) {
+					if (err) {
+						return console.log(err);
+					}
+					console.log("English pdf saved!");
+
+					fs.readFile(
+						"cvData/English_CV/" + cvEnglish.fileName,
+						(err, fileData) => {
+							console.log(
+								fileData,
+								"\n------------\n\n",
+								decodedBase64English,
+								"\n---------------\n\n"
+							);
+
+							s3.putObject(
+								{
+									Bucket: "prod-moyyn",
+									Key: "English_CV/" + cvEnglish.fileName,
+									Body: fileData,
+									ACL: "public-read",
+									ContentType: mime.getType("English_CV/" + cvEnglish.fileName),
+								},
+								(err, data) => {
+									if (err) throw err;
+									cvEnglish.fileName = cvEnglish.fileName;
+									console.log(data);
+								}
+							);
+						}
+					);
+				}
+			);
+		}
+
+		if (
+			cvGerman.data !== null &&
+			cvGerman.data.substr(0, 24) != tempCheck &&
+			cvGerman.data.endsWith(".pdf") === false
+		) {
+			console.log("Iam inside German\n");
+			fs.writeFile(
+				"cvData/German_CV/" + cvGerman.fileName,
+				decodedBase64German,
+				"binary",
+				function (err) {
+					if (err) {
+						return console.log(err);
+					}
+					console.log("German pdf saved in S3!");
+
+					fs.readFile(
+						"cvData/German_CV/" + cvGerman.fileName,
+						(err, fileData) => {
+							s3.putObject(
+								{
+									Bucket: "prod-moyyn",
+									Key: "German_CV/" + cvGerman.fileName,
+									Body: fileData,
+									ACL: "public-read",
+									ContentType: mime.getType("German_CV/" + cvGerman.fileName),
+								},
+								(err, data) => {
+									if (err) throw err;
+									cvGerman.fileName = cvGerman.fileName;
+									console.log(data);
+								}
+							);
+						}
+					);
+				}
+			);
+		}
+
+		// console.log(resp2, "\n------------\nI am the resp");
+
+		res.send({ success: true, message: resp2 });
 	} catch (err) {
+		console.log(err, "\n\n----------------\nIam err\n");
 		res.send({
 			success: false,
 			msg: err,
@@ -503,7 +628,7 @@ router.post("/desiredjoblist", async function (req, res) {
 		await ClientJobs.find().then(jobs => {
 			jobs.forEach(job => {
 				// console.log(job.jobTitle)
-				finalArr.push(job.jobTitle);
+				finalArr.push(job.jobTitle + " ( " + job.jobCode + " )");
 			});
 		});
 
@@ -652,7 +777,7 @@ router.post("/register", async function (req, res, next) {
 	// req.connection.setTimeout(100000);
 	try {
 		var data = req.body;
-		// console.log(data[0].firstname);
+		console.log(data, " \n-------------\nIam data\n\n");
 		var firstName = data[0].firstname;
 		var lastName = data[0].lastname;
 		var email = data[0].email;
@@ -803,8 +928,8 @@ router.post("/register", async function (req, res, next) {
 		userData.activeJobSeeking = activeJobSeeking;
 		userData.termsAndPrivacyFlag = termsAndPrivacyFlag;
 		// userData.password = password;
-		userData.cvEnglish = cvEnglish.fileName;
-		userData.cvGerman = cvGerman.fileName;
+		// userData.cvEnglish = cvEnglish.fileName;				// remove these
+		// userData.cvGerman = cvGerman.fileName;
 		userData.desiredPositions = desiredPositions;
 		userData.relocationWillingnessFlag = relocationWillingnessFlag;
 		userData.desiredEmployment = desiredEmployment;
@@ -846,7 +971,7 @@ router.post("/register", async function (req, res, next) {
 		profileSecurity.ipHistory = ipHistoryArr;
 		profileSecurity.lastProfileUpdateAt = null;
 		profileSecurity.lastDataRequestAt = null;
-		profileSecurity.dataVerificationFlag = false;
+		profileSecurity.emailVerificationFlag = false;
 		profileSecurity.resetPasswordFlag = false;
 		profileSecurity.password = password;
 		userData.profileSecurity = profileSecurity;
@@ -854,7 +979,7 @@ router.post("/register", async function (req, res, next) {
 		helperInformation.source = "Forms";
 		helperInformation.profileCompleteFlag = false;
 		helperInformation.formattedBy = "Data Cleaning Script";
-		helperInformation.dataVerificationFlag = false;
+		// helperInformation.dataVerificationFlag = false;
 		userData.helperInformation = helperInformation;
 
 		var momatchData = {};
@@ -874,18 +999,18 @@ router.post("/register", async function (req, res, next) {
 		});
 		var momatchResult = resp.data;
 
-		var jobStatistics = {};
-		jobStatistics.partner = momatchResult.partner;
-		jobStatistics.client = momatchResult.client;
-		jobStatistics.applied = desiredPositions;
-		jobStatistics.shortlisted = [];
-		jobStatistics.withdrawn = [];
-		jobStatistics.rejected = [];
-		jobStatistics.hired = [];
-		jobStatistics.preferred = [];
-		jobStatistics.recommended = [];
+		// var jobStatistics = {};
+		// jobStatistics.partner = momatchResult.partner;
+		// jobStatistics.client = momatchResult.client;
+		// jobStatistics.applied = desiredPositions;
+		// jobStatistics.shortlisted = [];
+		// jobStatistics.withdrawn = [];
+		// jobStatistics.rejected = [];
+		// jobStatistics.hired = [];
+		// jobStatistics.preferred = [];
+		// jobStatistics.recommended = [];
 
-		userData.jobStatistics = jobStatistics;
+		// userData.jobStatistics = jobStatistics;
 		var clientData = await clientFxn(momatchResult.client);
 		var partnerData = await partnerFxn(momatchResult.partner);
 
@@ -918,6 +1043,7 @@ router.post("/register", async function (req, res, next) {
 			}
 		});
 	} catch (err) {
+		console.log(err);
 		res.send({
 			success: false,
 			errors: err,
@@ -926,3 +1052,174 @@ router.post("/register", async function (req, res, next) {
 });
 
 module.exports = router;
+// "_id": "60bdf90741eae6c801379758",
+//   "email": "jdoe@gmail.com",
+//   "firstName": "John",
+//   "lastName": "Doe",
+//   "activeJobSeeking": false,
+//   "termsAndPrivacyFlag": true,
+//   "country": "India",
+//   "city": "Mumbai",
+//   "visaType": "Non-eu Citizen",
+//   "currentlyEmployedFlag": false,
+//   "drivingPermitFlag": false,
+//   "noticePeriod": "1",
+//   "contactNumber": "08079060851",
+//   "earliestJoiningDate": "code422",
+//   "relocationWillingnessFlag": false,
+//   "countryPreferences": [],
+//   "cityPreferences": [],
+//   "desiredEmployment": {
+//     "remote": false,
+//     "partTime": true,
+//     "fulltime": false,
+//     "freelance": true
+//   },
+//   "onlineProfiles": {
+//     "Stackoverflow": "",
+//     "LinkedIn": "",
+//     "Github": "",
+//     "Xing": "",
+//     "Dribbble": "",
+//     "Behance": "",
+//     "Other": ""
+//   },
+//   "desiredPositions": [
+//     "Backend Developer (m/w/x) - MO1797 - Talent Pool - Germany"
+//   ],
+//   "languages": [
+//     {
+//       "language": "English",
+//       "level": "A1"
+//     },
+//     {
+//       "language": "Hindi",
+//       "level": "Native"
+//     }
+//   ],
+//   "skills": [
+//     "javascript",
+//     "node.js"
+//   ],
+//   "industries": [
+//     "Program Development"
+//   ],
+//   "workExperience": [
+//     {
+//       "category": "Software Development",
+//       "role": "Node.js Developer",
+//       "experience": {
+//         "$numberInt": "1"
+//       }
+//     }
+//   ],
+//   "careerLevel": "Graduate",
+//   "createdAt": "1616674917000",
+//   "profileSecurity": {
+//     "password": "ajhd23823j2h323",
+//     "ipHistory": [],
+//     "lastProfileUpdateAt": null,
+//     "lastPasswordChangeAt": null,
+//     "lastDataRequestAt": null,
+//     "emailVerificationFlag": false,
+//     "dummyPassword": "]<gAP#X$",
+//     "resetPasswordFlag": true
+//   },
+//   "helperInformation": {
+//     "source": "App",
+//     "profileCompleteFlag": false,
+//     "formattedBy": "Data Cleaning Script",
+//     "dataVerificationFlag": false
+//   },
+//   "cv": {
+//     "german": false,
+//     "filename": "john_doe_bac963248a69af01.pdf",
+//     "english": true
+//   }
+
+/* 
+   "_id": "14f6d4bd4d341cc28c28d7705db97afd3dd2b7f657da3c0fe2d074cc8dfbd60c",
+    "email": "tomarvibhav55@gmail.com",
+    "firstName": "Vibhav",
+    "lastName": "Tomar",
+    "activeJobSeeking": true,
+    "termsAndPrivacyFlag": true,
+    "country": "India",
+    "city": "New Delhi",
+    "visaType": "Other",
+    "currentlyEmployedFlag": false,
+    "drivingPermitFlag": false,
+    "noticePeriod": -1,
+    "contactNumber": "+917000305373",
+    "earliestJoiningDate": "code422",
+    "relocationWillingnessFlag": false,
+    "countryPreferences": [],
+    "cityPreferences": [],
+    "desiredEmployment": {
+        "remote": true,
+        "partTime": true,
+        "fulltime": false,
+        "freelance": false
+    },
+    "onlineProfiles": {
+        "Stackoverflow": "",
+        "LinkedIn": "https://www.linkedin.com/in/vibhav-tomar-883282178/",
+        "Github": "",
+        "Xing": "",
+        "Dribbble": "",
+        "Behance": "",
+        "Other": ""
+    },
+    "desiredPositions": ["Backend Engineer (m/f/d) - node.js - BM21_101 - Berlin, Germany"],
+    "languages": [{
+        "language": "English",
+        "level": "A2"
+    }, {
+        "language": "Hindi",
+        "level": "Native"
+    }],
+    "skills": ["node.js", "mongodb"],
+    "industries": ["Computer Software"],
+    "workExperience": [{
+        "category": "Software Development",
+        "role": "Node.js Developer",
+        "experience": 1
+    }],
+    "careerLevel": "Young Professional",
+    "createdAt": {
+        "$date": "2021-03-19T11:03:58.000Z"
+    },
+    "jobStatistics": {
+        "applied": [],
+        "partner": [],
+        "client": [],
+        "shortlisted": [],
+        "withdrawn": [],
+        "rejected": [],
+        "hired": [],
+        "preferred": [],
+        "recommended": []
+    },
+    "jobComments": null,
+    "profileSecurity": {
+        "ipHistory": [],
+        "lastProfileUpdateAt": "2021-06-03T19:02:07.624Z",
+        "lastPasswordChangeAt": null,
+        "lastDataRequestAt": null,
+        "emailVerificationFlag": false,
+        "dummyPassword": "YQo4EnYA",
+        "resetPasswordFlag": true,
+        "password": "$2a$10$dq7kUSOgM9LtAKApONxSReMvgsUcIry0YEP8UMPuMVV4NvW8RwptS"
+    },
+    "helperInformation": {
+        "source": "App",
+        "profileCompleteFlag": false,
+        "formattedBy": "Data Cleaning Script",
+        "dataVerificationFlag": false
+    },
+    "cv": {
+        "german": false,
+        "filename": "vibhav_tomar_3d7f3c7027da7274.pdf",
+        "english": true
+    }
+*/
