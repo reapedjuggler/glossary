@@ -973,7 +973,10 @@ router.post("/register", async function (req, res, next) {
 									ContentType: mime.getType("englishCVs/" + cvEnglish.fileName),
 								},
 								(err, data) => {
-									if (err) throw err;
+									if (err) {
+										console.log(err, "\n-------------\n");
+										throw err;
+									}
 									cvEnglish.fileName = cvEnglish.fileName;
 									console.log(data);
 								}
