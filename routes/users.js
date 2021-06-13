@@ -865,16 +865,19 @@ router.post("/jobs", async function (req, res) {
 				"BM21_992",
 				"BM21_993",
 			];
+
 			var clientData = await clientFxn(momatchResult.client);
 			var partnerData = await partnerFxn(momatchResult.partner);
 			// console.log(partnerData);
+
+			// console.log(clientData, "   \n\n", partnerData, " \nIam data part and client\n\n");
 
 			let resp1 = await User3.findOne({ _id: candidate_id });
 
 			resp1.jobStatistics.partner = partnerData;
 			resp1.jobStatistics.client = clientData;
 
-			User3.findOneAndUpdate({ _id: _id }, { $set: resp });
+			User3.findOneAndUpdate({ _id: candidate_id }, { $set: resp1 });
 
 			var result = {
 				success: true,
