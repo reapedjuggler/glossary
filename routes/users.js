@@ -10,6 +10,10 @@ const base64 = require("js-base64");
 var mail = require("./mail");
 
 var User = require("../models/userModel");
+var User2 = require("../models/userModalC2");
+var User3 = require("../models/userModalC3");
+var Job = require("../models/ClientJobModel");
+
 var PartnerJobs = require("../models/PartnerJobModel");
 var ClientJobs = require("../models/ClientJobModel");
 const AWS = require("aws-sdk");
@@ -17,6 +21,7 @@ var mime = require("mime");
 var clientFxn = require("../models/jobDb").clientFxn;
 var partnerFxn = require("../models/jobDb").partnerFxn;
 const { decode } = require("punycode");
+const { resolve } = require("url");
 
 // Configure client for use with Spaces
 const spacesEndpoint = new AWS.Endpoint("fra1.digitaloceanspaces.com");
@@ -44,6 +49,35 @@ function makeid(length) {
 	return result.join("");
 }
 
+// var getAllJobId = async (desiredJobDetails, getJobIds) => {
+// 	return new Promise((resolve, reject) => {
+// 		setTimeout(() => {
+// 			let allDesiredJobs = [];
+
+// 			if (desiredJobDetails.length > 0) {
+// 				console.log("\n\n", desiredJobDetails, "\n\nInside the lloop\n");
+
+// 				desiredJobDetails.forEach(async ele => {
+// 					// every ele is a job code so we will find the id
+
+// 					console.log(ele, " Hehe\n");
+
+// 					var idForJobCode = await Job.findOne({ jobCode: ele });
+
+// 					console.log(
+// 						idForJobCode._id
+// 						// "\n\nIam the corresponding id for this job code\n"
+// 					);
+// 					allDesiredJobs.push(idForJobCode._id);
+// 					// console.log(allDesiredJobs, " iam the desired jobs\n");
+// 				});
+// 			}
+
+// 			resolve(allDesiredJobs);
+// 		}, 200);
+// 	});
+// };
+
 // console.log(makeid(8));
 
 var userData;
@@ -69,8 +103,12 @@ router.post("/login", function (req, res) {
 	var password = req.body.password;
 
 	User.getUserByEmail(email, function (err, user) {
-		if (err) throw err;
+		if (err) {
+			console.log(err, "\nFirst err in logging in\n");
+			throw err;
+		}
 		if (!user) {
+			console.log("No user with this email\n\n");
 			res.send({
 				success: false,
 				msg: "Login Unsuccessful.",
@@ -295,6 +333,8 @@ router.post("/editprofile", async function (req, res) {
 		// console.log(data[0], " \n\n Iam dataaaa\n\n");
 		// console.log(data[1], " \n\n Iam dataaaa at index 1\n\n");
 
+		console.log("hello\n");
+
 		var email = data[0].email;
 		var firstName = data[0].firstname;
 		var lastName = data[0].lastname;
@@ -369,7 +409,9 @@ router.post("/editprofile", async function (req, res) {
 		// 	"\n\n\nhehehe\n\n--------------\n\nId\n\n"
 		// );
 
-		prevId = prevId[0];
+		prevId = prevId[0]._id;
+
+		console.log(prevId, "\n\n Iam the id\n");
 
 		var desiredPositions = data[1].desiredPositions;
 		var relocationWillingnessFlag = data[3].relocationWillingnes;
@@ -458,26 +500,100 @@ router.post("/editprofile", async function (req, res) {
 		// var momatchResult = await momatchFxn(momatchData);
 		// console.log(momatchResult);
 
+		// const resp = await axios.post(momatchUrl, momatchData, {
+		// 	headers: { "Content-Type": "application/json" },
+		// });
+
+		// var momatchResult = resp.data;
+
+		/////////////////////////////////////////////////////////////////    Update for C2 and C3
+
 		// Job Statistics Part will be shifted to Candidates_C2
-		const resp = await axios.post(momatchUrl, momatchData, {
-			headers: { "Content-Type": "application/json" },
+
+
+		let tempC2Data = await User2.findOne({ _id: prevId });
+
+		tempC2Data.skills = skills;
+		tempC2Data.earliestJoiningDate = earliestJoiningDate;
+		tempC2Data.languages = languages;
+		tempC2Data.industries = industries;
+		tempC2Data.workExperience = workExperience;
+		tempC2Data.careerLevel = careerLevel;
+
+		// console.log(tempC2Data, " \n\n Iam the data in C2\n\n");
+
+		let respAfterUpdFromC2 = await User2.findOneAndUpdate(
+			{ _id: prevId },
+			{ $set: tempC2Data }
+		);
+
+		// console.log(respAfterUpdFromC2, "\n\n Iam the resp from C2\n\n");
+
+		// For C3 Collections and
+
+		let desiredJobDetails = [];
+
+		await desiredPositions.forEach(ele => {
+			// every job
+			// console.log(ele, "   ", ele[ele.length - 1], "  ", ele[ele.length - 3], "\nHehe iam ele\n");
+			if (ele[ele.length - 1] == ")") {
+				if (
+					ele[ele.length - 2] === " " &&
+					ele[ele.length - 3] >= "0" &&
+					ele[ele.length - 3] <= "9"
+				) {
+					let dataFromJob = "";
+
+					for (let i = ele.length - 3; ele[i] != " "; i--) {
+						// console.log(ele[i], "   lol\n");
+						dataFromJob = ele[i] + dataFromJob;
+					}
+
+					if (dataFromJob.length) desiredJobDetails.push(dataFromJob);
+				}
+			}
 		});
-		var momatchResult = resp.data;
 
-		// var jobStatistics = {};
-		// jobStatistics.partner = momatchResult.partner;
-		// jobStatistics.client = momatchResult.client;
-		// jobStatistics.applied = desiredPositions;
-		// jobStatistics.shortlisted = [];
-		// jobStatistics.withdrawn = [];
-		// jobStatistics.rejected = [];
-		// jobStatistics.hired = [];
-		// jobStatistics.preferred = [];
-		// jobStatistics.recommended = [];
+		// console.log(desiredJobDetails, "\n\n Iam the job codes fetched\n");
 
-		// userData.jobStatistics = jobStatistics;
+		let allJobIds = [];
 
-		// console.log(userData, "\n------------\n Iam User data\n\n");
+		for (let i = 0; i < desiredJobDetails.length; i++) {
+			let jobId = await Job.findOne({ jobCode: desiredJobDetails[i] });
+
+			console.log(jobId, " \n Iam the job id\n");
+
+			allJobIds.push(jobId._id);
+		}
+
+		// console.log(allJobIds, "\n\n", prevId, "\n-----------------\nIam the job ids\n");
+
+		///////////////////////////////////////////////////////////////////////////////
+
+
+		var jobStatistics = await User3.findOne({_id: prevId});
+
+		// console.log(jobStatistics, "\n\nIam the job Statistics\n");
+
+		jobStatistics = jobStatistics.jobStatistics;
+
+		// console.log(jobStatistics, "\n\nIam the job Statistics\n");
+
+		jobStatistics.applied = allJobIds;
+
+		// jobStatistics = jobStatistics.jobStatistics;
+
+		var c3Data = {_id: prevId, jobStatistics: jobStatistics};
+
+		let respAfterUpdFromC3 = await User3.findOneAndUpdate(
+			{ _id: prevId },
+			{$set : c3Data}
+		);
+
+		console.log(respAfterUpdFromC3, "\n\n Iam the resp from C2\n\n");
+
+		////////////////////////////////////////////////////////////////    Updating in C2 and C3 also
+
 		let resp2 = await User.findOneAndUpdate(
 			{ email: email },
 			{ $set: userData }
@@ -515,11 +631,11 @@ router.post("/editprofile", async function (req, res) {
 
 							s3.putObject(
 								{
-									Bucket: "prod-moyyn",
-									Key: "English_CV/" + cvEnglish.fileName,
+									Bucket: "production-moyyn",
+									Key: "englishCVs/" + cvEnglish.fileName,
 									Body: fileData,
 									ACL: "public-read",
-									ContentType: mime.getType("English_CV/" + cvEnglish.fileName),
+									ContentType: mime.getType("englishCVs/" + cvEnglish.fileName),
 								},
 								(err, data) => {
 									if (err) throw err;
@@ -554,11 +670,11 @@ router.post("/editprofile", async function (req, res) {
 						(err, fileData) => {
 							s3.putObject(
 								{
-									Bucket: "prod-moyyn",
-									Key: "German_CV/" + cvGerman.fileName,
+									Bucket: "production-moyyn",
+									Key: "germanCVs/" + cvGerman.fileName,
 									Body: fileData,
 									ACL: "public-read",
-									ContentType: mime.getType("German_CV/" + cvGerman.fileName),
+									ContentType: mime.getType("germanCVs/" + cvGerman.fileName),
 								},
 								(err, data) => {
 									if (err) throw err;
@@ -753,6 +869,13 @@ router.post("/jobs", async function (req, res) {
 			var partnerData = await partnerFxn(momatchResult.partner);
 			// console.log(partnerData);
 
+			let resp1 = await User3.findOne({ _id: candidate_id });
+
+			resp1.jobStatistics.partner = partnerData;
+			resp1.jobStatistics.client = clientData;
+
+			User3.findOneAndUpdate({ _id: _id }, { $set: resp });
+
 			var result = {
 				success: true,
 				candidate_id: candidate_id,
@@ -843,11 +966,11 @@ router.post("/register", async function (req, res, next) {
 
 							s3.putObject(
 								{
-									Bucket: "prod-moyyn",
-									Key: "English_CV/" + cvEnglish.fileName,
+									Bucket: "production-moyyn",
+									Key: "englishCVs/" + cvEnglish.fileName,
 									Body: fileData,
 									ACL: "public-read",
-									ContentType: mime.getType("English_CV/" + cvEnglish.fileName),
+									ContentType: mime.getType("englishCVs/" + cvEnglish.fileName),
 								},
 								(err, data) => {
 									if (err) throw err;
@@ -877,11 +1000,11 @@ router.post("/register", async function (req, res, next) {
 						(err, fileData) => {
 							s3.putObject(
 								{
-									Bucket: "prod-moyyn",
-									Key: "German_CV/" + cvGerman.fileName,
+									Bucket: "production-moyyn",
+									Key: "germanCVs/" + cvGerman.fileName,
 									Body: fileData,
 									ACL: "public-read",
-									ContentType: mime.getType("German_CV/" + cvGerman.fileName),
+									ContentType: mime.getType("germanCVs/" + cvGerman.fileName),
 								},
 								(err, data) => {
 									if (err) throw err;
@@ -950,7 +1073,7 @@ router.post("/register", async function (req, res, next) {
 		userData.workExperience = workExperience;
 		userData.languages = languages;
 		userData.createdAt = event.toISOString();
-		userData.jobComments = null;
+		// userData.jobComments = null;
 
 		var cv = {};
 		cv.filename = cvEnglish.fileName;
@@ -976,9 +1099,10 @@ router.post("/register", async function (req, res, next) {
 		profileSecurity.password = password;
 		userData.profileSecurity = profileSecurity;
 		var helperInformation = {};
-		helperInformation.source = "Forms";
-		helperInformation.profileCompleteFlag = false;
-		helperInformation.formattedBy = "Data Cleaning Script";
+		helperInformation.source = "Node-App";
+		helperInformation.profileCompleteFlag = true;
+		helperInformation.formattedBy = "back-end";
+		helperInformation.dataVerificationFlag = true;
 		// helperInformation.dataVerificationFlag = false;
 		userData.helperInformation = helperInformation;
 
@@ -997,27 +1121,92 @@ router.post("/register", async function (req, res, next) {
 		const resp = await axios.post(momatchUrl, momatchData, {
 			headers: { "Content-Type": "application/json" },
 		});
+
 		var momatchResult = resp.data;
 
-		// var jobStatistics = {};
-		// jobStatistics.partner = momatchResult.partner;
-		// jobStatistics.client = momatchResult.client;
-		// jobStatistics.applied = desiredPositions;
-		// jobStatistics.shortlisted = [];
-		// jobStatistics.withdrawn = [];
-		// jobStatistics.rejected = [];
-		// jobStatistics.hired = [];
-		// jobStatistics.preferred = [];
-		// jobStatistics.recommended = [];
+		var jobStatistics = {};
+		jobStatistics.partner = momatchResult.partner;
+		jobStatistics.client = momatchResult.client;
+		jobStatistics.applied = desiredPositions;
+		jobStatistics.shortlisted = [];
+		jobStatistics.withdrawn = [];
+		jobStatistics.rejected = [];
+		jobStatistics.hired = [];
+		jobStatistics.preferred = [];
+		jobStatistics.recommended = [];
 
 		// userData.jobStatistics = jobStatistics;
 		var clientData = await clientFxn(momatchResult.client);
 		var partnerData = await partnerFxn(momatchResult.partner);
 
 		var newUserData = new User(userData);
+
+		// Creating the entry in C2 and C3 too
+
+		var userTwoData = {};
+
+		userTwoData.activeJobSeeking = activeJobSeeking;
+		userTwoData._id = mystr1;
+		userTwoData.languages = languages;
+		userTwoData.skills = skills;
+		userTwoData.careerLevel = careerLevel;
+		userTwoData.industries = industries;
+		userTwoData.workExperience = workExperience;
+
+		let desiredJobDetails = [];
+
+		await desiredPositions.forEach(ele => {
+			// every job
+			// console.log(ele, "   ", ele[ele.length - 1], "  ", ele[ele.length - 3], "\nHehe iam ele\n");
+			if (ele[ele.length - 1] == ")") {
+				if (
+					ele[ele.length - 2] === " " &&
+					ele[ele.length - 3] >= "0" &&
+					ele[ele.length - 3] <= "9"
+				) {
+					let dataFromJob = "";
+
+					for (let i = ele.length - 3; ele[i] != " "; i--) {
+						// console.log(ele[i], "   lol\n");
+						dataFromJob = ele[i] + dataFromJob;
+					}
+
+					if (dataFromJob.length) desiredJobDetails.push(dataFromJob);
+				}
+			}
+		});
+
+		console.log(desiredJobDetails, "\n\n Iam the job codes fetched\n");
+
+		let allJobIds = [];
+
+		for (let i = 0; i < desiredJobDetails.length; i++) {
+			let jobId = await Job.findOne({ jobCode: desiredJobDetails[i] });
+
+			console.log(jobId, " \n Iam the job id\n");
+
+			allJobIds.push(jobId._id);
+		}
+
+		console.log(allJobIds, "\n-----------------\nIam the job ids\n");
+
+		jobStatistics.applied = allJobIds;
+
+		var dataFromCandidates_C2 = await User2.create(userTwoData);
+		var dataFromCandidates_C3 = await User3.create({
+			_id: mystr1,
+			jobStatistics: jobStatistics,
+		});
+
+		console.log(
+			dataFromCandidates_C2,
+			"\n\n-------------\n\ndata",
+			dataFromCandidates_C3,
+			"\n\n"
+		);
+
 		User.getUserByEmail(email, function (err, user) {
 			if (err) throw err;
-			// console.log(user);
 			if (user == null) {
 				console.log("New User");
 				User.createUser(newUserData, function (err, user) {
@@ -1042,6 +1231,7 @@ router.post("/register", async function (req, res, next) {
 				});
 			}
 		});
+		// res.send({ success: true, message: "helo" });
 	} catch (err) {
 		console.log(err);
 		res.send({

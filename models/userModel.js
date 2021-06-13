@@ -105,9 +105,9 @@ var CandidateSchema = mongoose.Schema({
 	jobStatistics:{
 		type: Object
 	},
-	jobComments:{
-		type: Array
-	},
+	// jobComments:{
+	// 	type: Array
+	// },
 	profileSecurity:{
 		type: Object
 	},
