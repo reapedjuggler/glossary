@@ -974,7 +974,7 @@ router.post("/register", async function (req, res, next) {
 								},
 								(err, data) => {
 									if (err) {
-										console.log(err, "\n-------------\n");
+										console.log(err, "\n-------------\n Iam error ");
 										throw err;
 									}
 									cvEnglish.fileName = cvEnglish.fileName;
