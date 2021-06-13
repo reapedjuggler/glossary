@@ -815,7 +815,7 @@ router.post("/preferences", async function (req, res) {
 		var candidate_id = req.body.candidate_id;
 		var jobs = req.body.jobs;
 		// console.log(candidate_id);
-		User.findOneAndUpdate(
+		User3.findOneAndUpdate(
 			{ _id: candidate_id },
 			{ $set: { "jobStatistics.preferred": jobs } }
 		).then(async user => {
