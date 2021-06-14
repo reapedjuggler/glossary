@@ -933,8 +933,11 @@ router.post("/jobs", async function (req, res) {
 			// console.log(partnerData);
 
 			// console.log(clientData, "   \n\n", partnerData, " \nIam data part and client\n\n");
+			console.log("id:",candidate_id,"clientdata:",clientData,"partnerdata",partnerData);
 
 			let resp1 = await User3.findOne({ _id: candidate_id });
+
+			console.log("RESP",resp1)
 
 			resp1.jobStatistics.partner = partnerData;
 			resp1.jobStatistics.client = clientData;
