@@ -204,7 +204,7 @@ router.post("/forgotpassword", async (req, res) => {
 	}
 });
 
-router.post("/resetpassword", function (req, res) {
+router.post("/resetpassword", async (req, res) => {
 	try {
 		var candidate_id = req.body.candidate_id;
 		var newpassword = req.body.newpassword;
@@ -249,6 +249,70 @@ router.post("/resetpassword", function (req, res) {
 			success: false,
 			err: err,
 		});
+	}
+});
+
+router.post("/setNewPassword", async (req, res) => {
+	// first check if the user exist and
+
+	try {
+		let { id, oldPassword, newPassword, timeStamp } = req.body;
+
+		console.log(
+			id,
+			"\n",
+			oldPassword,
+			"\n",
+			newPassword,
+			"\n",
+			timeStamp,
+			"\n\n"
+		);
+
+		let resp = await User.find({ _id: id });
+
+		// console.log(resp, " \nThe required User\n");
+
+		if (resp.length === 0) {
+			res.send({
+				success: true,
+				msg: "No User with the specified email id please sign up to create your account",
+			});
+		}
+
+		const password = resp[0].profileSecurity.password;
+
+		const passwordValid = await bcrypt.compare(oldPassword, password);
+
+		// console.log(passwordValid, " Iam the result for compare\n");
+
+		if (!passwordValid) {
+			throw new Error("Invalid Password");
+		} else {
+			// console.log("Everything good till here\n");
+
+			bcrypt.genSalt(10, function (err, salt) {
+				bcrypt.hash(newPassword, salt, async function (err, hash) {
+					// Store hash in your password DB.
+
+					resp[0].profileSecurity.password = hash;
+					resp[0].profileSecurity.lastProfileUpdateAt = timeStamp;
+					// console.log(hash, " \nNew Password\n\n");
+
+					let updPassUser = await User.findOneAndUpdate(
+						{ email: resp[0].email },
+						{ $set: resp[0] }
+					);
+
+					res.send({ success: true, message: "Password Updated Successfully" });
+
+					// console.log(updPassUser, "\n\nIam the updPassUser\n\n");
+				});
+			});
+		}
+	} catch (err) {
+		console.log(err, "\n\n-------------\n Iam error in setNewPassword");
+		res.send({ success: false, msg: "Password was not updated" });
 	}
 });
 
@@ -510,7 +574,6 @@ router.post("/editprofile", async function (req, res) {
 
 		// Job Statistics Part will be shifted to Candidates_C2
 
-
 		let tempC2Data = await User2.findOne({ _id: prevId });
 
 		tempC2Data.skills = skills;
@@ -570,8 +633,7 @@ router.post("/editprofile", async function (req, res) {
 
 		///////////////////////////////////////////////////////////////////////////////
 
-
-		var jobStatistics = await User3.findOne({_id: prevId});
+		var jobStatistics = await User3.findOne({ _id: prevId });
 
 		// console.log(jobStatistics, "\n\nIam the job Statistics\n");
 
@@ -583,11 +645,11 @@ router.post("/editprofile", async function (req, res) {
 
 		// jobStatistics = jobStatistics.jobStatistics;
 
-		var c3Data = {_id: prevId, jobStatistics: jobStatistics};
+		var c3Data = { _id: prevId, jobStatistics: jobStatistics };
 
 		let respAfterUpdFromC3 = await User3.findOneAndUpdate(
 			{ _id: prevId },
-			{$set : c3Data}
+			{ $set: c3Data }
 		);
 
 		console.log(respAfterUpdFromC3, "\n\n Iam the resp from C2\n\n");
