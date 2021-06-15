@@ -80,8 +80,6 @@ function makeid(length) {
 
 // console.log(makeid(8));
 
-var userData;
-
 /* GET users listing. */
 router.get("/", function (req, res, next) {
 	res.send("Candidates Home page");
@@ -257,17 +255,6 @@ router.post("/setNewPassword", async (req, res) => {
 
 	try {
 		let { id, oldPassword, newPassword, timeStamp } = req.body;
-
-		console.log(
-			id,
-			"\n",
-			oldPassword,
-			"\n",
-			newPassword,
-			"\n",
-			timeStamp,
-			"\n\n"
-		);
 
 		let resp = await User.find({ _id: id });
 
@@ -551,29 +538,6 @@ router.post("/editprofile", async function (req, res) {
 		cv.german = cvGerman.data !== null ? true : false;
 		userData.cv = cv;
 
-		var momatchData = {};
-		var candidate = {};
-		candidate.city = city;
-		candidate.relocationWillingnessFlag = relocationWillingnessFlag;
-		candidate.careerLevel = careerLevel;
-		candidate.skills = skills;
-		candidate.languages = languages;
-		momatchData.candidate = candidate;
-		// console.log(momatchData);
-
-		// var momatchResult = await momatchFxn(momatchData);
-		// console.log(momatchResult);
-
-		// const resp = await axios.post(momatchUrl, momatchData, {
-		// 	headers: { "Content-Type": "application/json" },
-		// });
-
-		// var momatchResult = resp.data;
-
-		/////////////////////////////////////////////////////////////////    Update for C2 and C3
-
-		// Job Statistics Part will be shifted to Candidates_C2
-
 		let tempC2Data = await User2.findOne({ _id: prevId });
 
 		tempC2Data.skills = skills;
@@ -597,8 +561,6 @@ router.post("/editprofile", async function (req, res) {
 		let desiredJobDetails = [];
 
 		await desiredPositions.forEach(ele => {
-			// every job
-			// console.log(ele, "   ", ele[ele.length - 1], "  ", ele[ele.length - 3], "\nHehe iam ele\n");
 			if (ele[ele.length - 1] == ")") {
 				if (
 					ele[ele.length - 2] === " " &&
@@ -617,8 +579,6 @@ router.post("/editprofile", async function (req, res) {
 			}
 		});
 
-		// console.log(desiredJobDetails, "\n\n Iam the job codes fetched\n");
-
 		let allJobIds = [];
 
 		for (let i = 0; i < desiredJobDetails.length; i++) {
@@ -629,23 +589,44 @@ router.post("/editprofile", async function (req, res) {
 			allJobIds.push(jobId._id);
 		}
 
-		// console.log(allJobIds, "\n\n", prevId, "\n-----------------\nIam the job ids\n");
-
 		///////////////////////////////////////////////////////////////////////////////
 
-		var jobStatistics = await User3.findOne({ _id: prevId });
+		var respFromC3 = await User3.findOne({ _id: prevId });
 
-		// console.log(jobStatistics, "\n\nIam the job Statistics\n");
+		if (respFromC3 === undefined) {
+			res.send({ success: false, message: "User is undefined in C3" });
+		}
 
-		jobStatistics = jobStatistics.jobStatistics;
+		var jobStatisticsForC3 = respFromC3.jobStatistics;
 
-		// console.log(jobStatistics, "\n\nIam the job Statistics\n");
+		jobStatisticsForC3.applied = allJobIds;
 
-		jobStatistics.applied = allJobIds;
+		var momatchData = {};
+		var candidate = {};
+		candidate.city = city;
+		candidate.relocationWillingnessFlag = relocationWillingnessFlag;
+		candidate.careerLevel = careerLevel;
+		candidate.skills = skills;
+		candidate.languages = languages;
+		momatchData.candidate = candidate;
 
-		// jobStatistics = jobStatistics.jobStatistics;
+		// var momatchResult = await momatchFxn(momatchData);
+		// console.log(momatchResult);
+		const resp = await axios.post(momatchUrl, momatchData, {
+			headers: { "Content-Type": "application/json" },
+		});
+		var momatchResult = resp.data;
 
-		var c3Data = { _id: prevId, jobStatistics: jobStatistics };
+		console.log(momatchResult, "\nIam the mo match data\n\n");
+
+		var clientData = await clientFxn(momatchResult.client);
+		var partnerData = await partnerFxn(momatchResult.partner);
+		// console.log(partnerData);
+
+		respFromC3.jobStatistics.partner = partnerData;
+		respFromC3.jobStatistics.client = clientData;
+
+		var c3Data = { _id: prevId, jobStatistics: jobStatisticsForC3 };
 
 		let respAfterUpdFromC3 = await User3.findOneAndUpdate(
 			{ _id: prevId },
@@ -654,7 +635,7 @@ router.post("/editprofile", async function (req, res) {
 
 		console.log(respAfterUpdFromC3, "\n\n Iam the resp from C2\n\n");
 
-		////////////////////////////////////////////////////////////////    Updating in C2 and C3 also
+		// ////////////////////////////////////////////////////////////////    Updating in C2 and C3 also
 
 		let resp2 = await User.findOneAndUpdate(
 			{ email: email },
@@ -902,44 +883,18 @@ router.post("/jobs", async function (req, res) {
 		// console.log(candidate_id);
 		User.findOne({ _id: candidate_id }).then(async user => {
 			console.log(user.city);
-			var momatchData = {};
-			var candidate = {};
-			candidate.city = user.city;
-			candidate.relocationWillingnessFlag = user.relocationWillingnessFlag;
-			candidate.careerLevel = user.careerLevel;
-			candidate.skills = user.skills;
-			candidate.languages = user.languages;
-			momatchData.candidate = candidate;
-			// console.log(momatchData);
-
-			// var momatchResult = await momatchFxn(momatchData);
-			// console.log(momatchResult);
-			const resp = await axios.post(momatchUrl, momatchData, {
-				headers: { "Content-Type": "application/json" },
-			});
-			var momatchResult = resp.data;
-			console.log(momatchResult);
-			// var test = ["1_CL_1_1"]
-			var partnerJobs = [
-				"BM21_905",
-				"BM21_990",
-				"BM21_991",
-				"BM21_992",
-				"BM21_993",
-			];
-
-			var clientData = await clientFxn(momatchResult.client);
-			var partnerData = await partnerFxn(momatchResult.partner);
-			// console.log(partnerData);
 
 			// console.log(clientData, "   \n\n", partnerData, " \nIam data part and client\n\n");
 
 			let resp1 = await User3.findOne({ _id: candidate_id });
 
-			resp1.jobStatistics.partner = partnerData;
-			resp1.jobStatistics.client = clientData;
+			if (resp1 === undefined) {
+				res.send({ success: false });
+			}
+			// User3.findOneAndUpdate({ _id: candidate_id }, { $set: resp1 });
 
-			User3.findOneAndUpdate({ _id: candidate_id }, { $set: resp1 });
+			const clientData = resp1.jobStatistics.client;
+			const partnerData = resp1.jobStatistics.partner;
 
 			var result = {
 				success: true,
