@@ -175,8 +175,6 @@ router.post("/forgotpassword", async (req, res) => {
 			email: email,
 		});
 
-		mail(email, user.profileSecurity.dummyPassword, email);
-
 		let resp = await User.updateOne(
 			{ email: email },
 			{
@@ -186,6 +184,8 @@ router.post("/forgotpassword", async (req, res) => {
 				},
 			}
 		);
+
+		mail(email, user.profileSecurity.dummyPassword, email);
 
 		console.log(resp, "  ", "\n", email, "\nIam the user after upd\n\n");
 
@@ -208,14 +208,16 @@ router.post("/resetpassword", async (req, res) => {
 		var newpassword = req.body.newpassword;
 		var dummypassword = req.body.dummypassword;
 
+		// console.log(candidate_id, " \n", newpassword, "\n", dummypassword, "\n\n");
+
 		bcrypt.genSalt(10, function (err, salt) {
 			bcrypt.hash(newpassword, salt, function (err, hash) {
 				// console.log(hash);
 
 				User.updateOne(
 					{
-						candidate_id: candidate_id,
-						"profileSecurity.dummyPassword": dummypassword,
+						_id: candidate_id,
+						// "profileSecurity.dummyPassword": dummypassword,
 					},
 					{
 						$set: {
