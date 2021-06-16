@@ -7,13 +7,17 @@ var crypto = require("crypto");
 var fs = require("fs");
 const base64 = require("js-base64");
 
+// Aws mail service
 var mail = require("./mail");
 
+// Models
 var User = require("../models/userModel");
 var User2 = require("../models/userModalC2");
 var User3 = require("../models/userModalC3");
 var Job = require("../models/ClientJobModel");
+var admin = require("../models/adminControl");
 
+// Momatch and other data
 var PartnerJobs = require("../models/PartnerJobModel");
 var ClientJobs = require("../models/ClientJobModel");
 const AWS = require("aws-sdk");
@@ -22,6 +26,8 @@ var clientFxn = require("../models/jobDb").clientFxn;
 var partnerFxn = require("../models/jobDb").partnerFxn;
 const { decode } = require("punycode");
 const { resolve } = require("url");
+const { ObjectID } = require("mongodb");
+const { ObjectId } = require("mongodb");
 
 // Configure client for use with Spaces
 const spacesEndpoint = new AWS.Endpoint("fra1.digitaloceanspaces.com");
@@ -49,37 +55,6 @@ function makeid(length) {
 	return result.join("");
 }
 
-// var getAllJobId = async (desiredJobDetails, getJobIds) => {
-// 	return new Promise((resolve, reject) => {
-// 		setTimeout(() => {
-// 			let allDesiredJobs = [];
-
-// 			if (desiredJobDetails.length > 0) {
-// 				console.log("\n\n", desiredJobDetails, "\n\nInside the lloop\n");
-
-// 				desiredJobDetails.forEach(async ele => {
-// 					// every ele is a job code so we will find the id
-
-// 					console.log(ele, " Hehe\n");
-
-// 					var idForJobCode = await Job.findOne({ jobCode: ele });
-
-// 					console.log(
-// 						idForJobCode._id
-// 						// "\n\nIam the corresponding id for this job code\n"
-// 					);
-// 					allDesiredJobs.push(idForJobCode._id);
-// 					// console.log(allDesiredJobs, " iam the desired jobs\n");
-// 				});
-// 			}
-
-// 			resolve(allDesiredJobs);
-// 		}, 200);
-// 	});
-// };
-
-// console.log(makeid(8));
-
 /* GET users listing. */
 router.get("/", function (req, res, next) {
 	res.send("Candidates Home page");
@@ -93,6 +68,30 @@ router.get("/register", function (req, res, next) {
 
 router.get("/login", function (req, res, next) {
 	res.send("This is the GET login page");
+});
+
+router.post("/getcandidatestatus", async (req, res, next) => {
+	try {
+		console.log(req.body);
+		const { id } = req.body;
+
+		const resp = await admin.findOne({ _id: ObjectId(id) });
+
+		// console.log(resp, "\nIam the status of Candidate");
+
+		if (resp == null) {
+			res.send({ success: false });
+		}
+
+		// const resp1 = await admin.find({});
+
+		// console.log(resp1, "\nIam the resp1\n\n");
+
+		res.send({ success: true, message: resp.CandidateLive });
+	} catch (err) {
+		console.log(err, "\n\nIam the err\n");
+		res.send({ success: false, message: "Error in finding status" });
+	}
 });
 
 router.post("/login", function (req, res) {
