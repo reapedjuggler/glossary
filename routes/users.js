@@ -36,7 +36,6 @@ const s3 = new AWS.S3({
 	accessKeyId: "ZGSAENDUVYA5FPKACAQQ",
 	secretAccessKey: "I5ntx/15Yo4a0VFkVQ86UWv8ZD++8XrtvW3M5425Ym0",
 });
-const event = new Date();
 
 router.use(expressValidator());
 var momatchUrl = "https://candidate.momatch.de/matches";
@@ -221,7 +220,7 @@ router.post("/resetpassword", async (req, res) => {
 					{
 						$set: {
 							"profileSecurity.password": hash,
-							"profileSecurity.lastProfileUpdateAt": event.toISOString(),
+							"profileSecurity.lastProfileUpdateAt": new Date(),
 							"profileSecurity.resetPasswordFlag": false,
 						},
 					},
@@ -305,7 +304,6 @@ router.post("/setNewPassword", async (req, res) => {
 });
 
 router.post("/delete", async (req, res) => {
-	
 	var candidate_id = req.body.candidate_id;
 
 	try {
@@ -337,7 +335,9 @@ router.post("/delete", async (req, res) => {
 
 			console.log(fileNameGerman, "  ", fileNameEnglish);
 
-			const to = "talent@moyyn.com";
+			// const to = "talent@moyyn.com";
+
+			const to = "tomarvibhav55@gmail.com";
 
 			mailForDelete(to, fileNameEnglish, fileNameGerman);
 
@@ -551,7 +551,7 @@ router.post("/editprofile", async function (req, res) {
 		// );
 
 		var profileSecurity = tempSec[0].profileSecurity;
-		profileSecurity.lastProfileUpdateAt = event.toISOString();
+		profileSecurity.lastProfileUpdateAt = new Date().toLocaleString();
 
 		userData.profileSecurity = profileSecurity;
 
@@ -1120,7 +1120,7 @@ router.post("/register", async function (req, res, next) {
 		userData.skills = skills;
 		userData.workExperience = workExperience;
 		userData.languages = languages;
-		userData.createdAt = event.toISOString();
+		userData.createdAt = new Date().toLocaleString();
 		// userData.jobComments = null;
 
 		var cv = {};
