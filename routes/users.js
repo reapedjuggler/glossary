@@ -304,20 +304,19 @@ router.post("/setNewPassword", async (req, res) => {
 	}
 });
 
-router.post("/delete", async function (req, res) {
+router.post("/delete", async (req, res) => {
+	
 	var candidate_id = req.body.candidate_id;
 
-	var resp = await User.findOne({ _id: candidate_id });
-
 	try {
+		const resp = await User.findOne({ _id: candidate_id });
+
 		if (resp) {
-			mailForDelete("talent@moyyn.com", candidate_id, resp.email);
+			console.log(resp, " \n\n Iam resp");
 
 			// we will delete it immediately from the db
 
-			let resp = await User.findOne({ _id: candidate_id });
-
-			const fileNameEnglish = "No Data",
+			var fileNameEnglish = "No Data",
 				fileNameGerman = "No Data";
 
 			if (resp.cv.english === true) {
@@ -337,6 +336,8 @@ router.post("/delete", async function (req, res) {
 			// Name --> FirstName_LastName_hash(16digits)
 
 			console.log(fileNameGerman, "  ", fileNameEnglish);
+
+			const to = "talent@moyyn.com";
 
 			mailForDelete(to, fileNameEnglish, fileNameGerman);
 
@@ -726,7 +727,6 @@ router.post("/editprofile", async function (req, res) {
 			cvGerman.data.substr(0, 24) != tempCheck &&
 			cvGerman.data.endsWith(".pdf") === false
 		) {
-			console.log("Iam inside German\n");
 			fs.writeFile(
 				"cvData/German_CV/" + cvGerman.fileName,
 				decodedBase64German,
@@ -735,7 +735,7 @@ router.post("/editprofile", async function (req, res) {
 					if (err) {
 						return console.log(err);
 					}
-					console.log("German pdf saved in S3!");
+					// console.log("German pdf saved in S3!");
 
 					fs.readFile(
 						"cvData/German_CV/" + cvGerman.fileName,
@@ -760,11 +760,9 @@ router.post("/editprofile", async function (req, res) {
 			);
 		}
 
-		// console.log(resp2, "\n------------\nI am the resp");
-
-		res.send({ success: true, message: resp2 });
+		res.send({ success: true, message: "Profile updated" });
 	} catch (err) {
-		console.log(err, "\n\n----------------\nIam err\n");
+		// console.log(err, "\n\n----------------\nIam err\n");
 		res.send({
 			success: false,
 			msg: err,
