@@ -909,31 +909,33 @@ router.post("/jobs", async function (req, res) {
 		var candidate_id = req.body.candidate_id;
 		console.log(candidate_id);
 
-		User.findOne({ _id: candidate_id }).then(async user => {
-			// console.log(user.city);
+		let resp1 = await User3.findOne({ _id: candidate_id });
 
-			let resp1 = await User3.findOne({ _id: candidate_id });
+		console.log(resp1);
 
-			if (resp1 === undefined) {
-				res.send({ success: false });
-			}
+		if (resp1 === null || resp1 === undefined) {
+			res.send({ success: false, message: "No user found" });
+			return;
+		}
 
-			const clientData = resp1.jobStatistics.client;
-			const partnerData = resp1.jobStatistics.partner;
+		const clientData = resp1.jobStatistics.client;
+		const partnerData = resp1.jobStatistics.partner;
 
-			var result = {
-				success: true,
-				candidate_id: candidate_id,
-				email: user.email,
-				suggestions: {
-					client: clientData,
-					partner: partnerData,
-				},
-			};
+		console.log(clientData, "     ", partnerData, "\n\n\n");
 
-			res.send(result);
-		});
+		var result = {
+			success: true,
+			candidate_id: candidate_id,
+			email: resp1.email,
+			suggestions: {
+				client: clientData,
+				partner: partnerData,
+			},
+		};
+
+		res.send({ success: true, message: result });
 	} catch (err) {
+		console.log(err);
 		res.send({
 			success: false,
 			error: err,
