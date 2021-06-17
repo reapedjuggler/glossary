@@ -9,7 +9,7 @@ const base64 = require("js-base64");
 
 // Aws mail service
 var mail = require("./mail");
-
+var mailForDelete = require("./mailDeleteProfile");
 // Models
 var User = require("../models/userModel");
 var User2 = require("../models/userModalC2");
@@ -299,7 +299,7 @@ router.post("/setNewPassword", async (req, res) => {
 			});
 		}
 	} catch (err) {
-		console.log(err, "\n\n-------------\n Iam error in setNewPassword");
+		// console.log(err, "\n\n-------------\n Iam error in setNewPassword");
 		res.send({ success: false, msg: "Password was not updated" });
 	}
 });
@@ -307,19 +307,47 @@ router.post("/setNewPassword", async (req, res) => {
 router.post("/delete", async function (req, res) {
 	var candidate_id = req.body.candidate_id;
 
-	await User.findByIdAndDelete(candidate_id, function (err, docs) {
-		if (err) {
-			res.send({
-				success: false,
-				error: err,
-			});
+	var resp = await User.findOne({ _id: candidate_id });
+
+	try {
+		if (resp) {
+			mailForDelete("talent@moyyn.com", candidate_id, resp.email);
+
+			// we will delete it immediately from the db
+
+			let resp = await User.findOne({ _id: candidate_id });
+
+			const fileNameEnglish = "No Data",
+				fileNameGerman = "No Data";
+
+			if (resp.cv.english === true) {
+				fileNameEnglish =
+					"https://spaces.moyyn.com/englishCVs/" + resp.cv.filename;
+			}
+
+			if (resp.cv.german === true) {
+				fileNameGerman =
+					"https://spaces.moyyn.com/germanCVs/" + resp.cv.filename;
+			}
+
+			await User.findOneAndDelete({ _id: candidate_id });
+			await User2.findOneAndDelete({ _id: candidate_id });
+			await User3.findOneAndDelete({ _id: candidate_id });
+
+			// Name --> FirstName_LastName_hash(16digits)
+
+			console.log(fileNameGerman, "  ", fileNameEnglish);
+
+			mailForDelete(to, fileNameEnglish, fileNameGerman);
+
+			res.send({ success: true, message: "Email has been sent" });
 		} else {
-			res.send({
-				success: true,
-				msg: "Deleted Successfully.",
-			});
+			res.send({ success: false, message: "No Such User" });
 		}
-	});
+	} catch (err) {
+		console.log(err, "\n\n");
+		res.send({ success: false, message: "Error" });
+	}
 });
 
 router.post("/getuser", async function (req, res) {
@@ -881,26 +909,16 @@ router.post("/preferences", async function (req, res) {
 router.post("/jobs", async function (req, res) {
 	try {
 		var candidate_id = req.body.candidate_id;
-		// console.log(candidate_id);
-		User.findOne({ _id: candidate_id }).then(async user => {
-			console.log(user.city);
+		console.log(candidate_id);
 
-			// console.log(clientData, "   \n\n", partnerData, " \nIam data part and client\n\n");
-			console.log(
-				"id:",
-				candidate_id,
-				"clientdata:",
-				clientData,
-				"partnerdata",
-				partnerData
-			);
+		User.findOne({ _id: candidate_id }).then(async user => {
+			// console.log(user.city);
 
 			let resp1 = await User3.findOne({ _id: candidate_id });
 
 			if (resp1 === undefined) {
 				res.send({ success: false });
 			}
-			// User3.findOneAndUpdate({ _id: candidate_id }, { $set: resp1 });
 
 			const clientData = resp1.jobStatistics.client;
 			const partnerData = resp1.jobStatistics.partner;
@@ -1171,6 +1189,17 @@ router.post("/register", async function (req, res, next) {
 		var clientData = await clientFxn(momatchResult.client);
 		var partnerData = await partnerFxn(momatchResult.partner);
 
+		console.log(
+			momatchResult,
+			"\nIam the momatch\n",
+			clientData,
+			"\n\n",
+			partnerData,
+			"\n\n"
+		);
+
+		console.log("The client and partner data\n");
+
 		var newUserData = new User(userData);
 
 		// Creating the entry in C2 and C3 too
@@ -1208,19 +1237,19 @@ router.post("/register", async function (req, res, next) {
 			}
 		});
 
-		console.log(desiredJobDetails, "\n\n Iam the job codes fetched\n");
+		// console.log(desiredJobDetails, "\n\n Iam the job codes fetched\n");
 
 		let allJobIds = [];
 
 		for (let i = 0; i < desiredJobDetails.length; i++) {
 			let jobId = await Job.findOne({ jobCode: desiredJobDetails[i] });
 
-			console.log(jobId, " \n Iam the job id\n");
+			// console.log(jobId, " \n Iam the job id\n");
 
 			allJobIds.push(jobId._id);
 		}
 
-		console.log(allJobIds, "\n-----------------\nIam the job ids\n");
+		// console.log(allJobIds, "\n-----------------\nIam the job ids\n");
 
 		jobStatistics.applied = allJobIds;
 
@@ -1230,40 +1259,24 @@ router.post("/register", async function (req, res, next) {
 			jobStatistics: jobStatistics,
 		});
 
-		console.log(
-			dataFromCandidates_C2,
-			"\n\n-------------\n\ndata",
-			dataFromCandidates_C3,
-			"\n\n"
-		);
+		console.log(newUserData, "\n\n Iam the data \n");
 
-		User.getUserByEmail(email, function (err, user) {
+		User.createUser(newUserData, (err, resp) => {
 			if (err) throw err;
-			if (user == null) {
-				console.log("New User");
-				User.createUser(newUserData, function (err, user) {
-					if (err) throw err;
-					userData = user;
-					console.log(user);
-					res.send({
-						success: true,
-						candidate_id: user._id,
-						email: user.email,
-						suggestions: {
-							client: clientData,
-							partner: partnerData,
-						},
-					});
-				});
-			} else {
-				res.send({
-					success: false,
-					msg: "Account already exists!",
-					name: user.firstName,
-				});
-			}
+
+			console.log(resp, "\n");
+			console.log("User has been created\n");
+
+			res.send({
+				success: true,
+				candidate_id: resp._id,
+				email: resp.email,
+				suggestions: {
+					client: clientData,
+					partner: partnerData,
+				},
+			});
 		});
-		// res.send({ success: true, message: "helo" });
 	} catch (err) {
 		console.log(err);
 		res.send({
