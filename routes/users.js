@@ -335,9 +335,9 @@ router.post("/delete", async (req, res) => {
 
 			console.log(fileNameGerman, "  ", fileNameEnglish);
 
-			// const to = "talent@moyyn.com";
+			const to = "talent@moyyn.com";
 
-			const to = "tomarvibhav55@gmail.com";
+			// const to = "tomarvibhav55@gmail.com";
 
 			mailForDelete(to, fileNameEnglish, fileNameGerman);
 
