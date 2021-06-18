@@ -202,7 +202,7 @@ router.post("/forgotpassword", async (req, res) => {
 
 router.post("/resetpassword", async (req, res) => {
 	try {
-		var candidate_id = req.body.candidate_id;
+		var email = req.body.email;
 		var newpassword = req.body.newpassword;
 		var dummypassword = req.body.dummypassword;
 
@@ -214,7 +214,7 @@ router.post("/resetpassword", async (req, res) => {
 
 				User.updateOne(
 					{
-						_id: candidate_id,
+						email: email,
 						"profileSecurity.dummyPassword": dummypassword,
 					},
 					{
