@@ -183,7 +183,7 @@ router.post("/forgotpassword", async (req, res) => {
 			}
 		);
 
-		mail(email, user.profileSecurity.dummyPassword, email);
+		mail(email, tempPass, email);
 
 		console.log(resp, "  ", "\n", email, "\nIam the user after upd\n\n");
 
@@ -215,7 +215,7 @@ router.post("/resetpassword", async (req, res) => {
 				User.updateOne(
 					{
 						_id: candidate_id,
-						// "profileSecurity.dummyPassword": dummypassword,
+						"profileSecurity.dummyPassword": dummypassword,
 					},
 					{
 						$set: {
