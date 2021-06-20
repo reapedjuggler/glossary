@@ -1267,8 +1267,6 @@ router.post("/register", async function (req, res, next) {
 			console.log(resp, "\n");
 			console.log("User has been created\n");
 
-			res.setHeader('Access-Control-Allow-Origin', '*');
-			res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, HEAD');
 			res.send({
 				success: true,
 				candidate_id: resp._id,
@@ -1281,8 +1279,6 @@ router.post("/register", async function (req, res, next) {
 		});
 	} catch (err) {
 		console.log(err);
-		res.setHeader('Access-Control-Allow-Origin', '*');
-		res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, HEAD');
 		res.send({
 			success: false,
 			errors: err,

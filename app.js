@@ -14,8 +14,8 @@ var users = require('./routes/users');
 
 var app = express();
 
-app.use(bodyParser.json({limit: '2000mb'}));
-app.use(bodyParser.urlencoded({limit: '200mb', extended: true}));
+app.use(bodyParser.json({limit: '100mb'}));
+app.use(bodyParser.urlencoded({limit: '100mb', extended: true}));
 
 // Handle Sessions
 app.use(session({
