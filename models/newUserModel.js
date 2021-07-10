@@ -1,142 +1,150 @@
-const mongoose = require('mongoose');
-var bcrypt = require('bcryptjs');
+const mongoose = require("mongoose");
+var bcrypt = require("bcryptjs");
+require("dotenv").config();
+const env = process.env;
 
-var url = "mongodb+srv://smurfette:rKvfAgK4AElQMw5C@cluster0.egtjb.mongodb.net/PROD?retryWrites=true&w=majority";
+// var url = "mongodb+srv://smurfette:rKvfAgK4AElQMw5C@cluster0.egtjb.mongodb.net/PROD?retryWrites=true&w=majority";
+
+var url = env.srv;
 
 mongoose.connect(url, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useUnifiedTopology: true
+	useNewUrlParser: true,
+	useCreateIndex: true,
+	useUnifiedTopology: true,
 });
 
 // User Schema
 var CandidateSchema = mongoose.Schema({
-    _id:{
-        type:String
-    },
+	_id: {
+		type: String,
+	},
 	password: {
-		type: String
+		type: String,
 	},
 	email: {
-		type: String
+		type: String,
 	},
 	firstName: {
-		type: String
+		type: String,
 	},
 	lastName: {
-		type: String
+		type: String,
 	},
 	activeJobSeeking: {
-		type: Boolean
+		type: Boolean,
 	},
 	termsAndPrivacyFlag: {
-		type: Boolean
+		type: Boolean,
 	},
 	cvEnglish: {
-		type: String
+		type: String,
 	},
 	cvGerman: {
-		type: String
+		type: String,
 	},
 	country: {
-		type: String
+		type: String,
 	},
 	city: {
-		type: String
+		type: String,
 	},
 	visaType: {
-		type: String
+		type: String,
 	},
 	currentlyEmployedFlag: {
-		type: Boolean
+		type: Boolean,
 	},
 	drivingPermitFlag: {
-		type: Boolean
+		type: Boolean,
 	},
 	noticePeriod: {
-		type: Number
+		type: Number,
 	},
 	contactNumber: {
-		type: String
+		type: String,
 	},
 	earliestJoiningDate: {
-		type: Date
+		type: Date,
 	},
 	relocationWillingnessFlag: {
-		type: Boolean
+		type: Boolean,
 	},
 	countryPreferences: {
-		type: Array
+		type: Array,
 	},
 	cityPreferences: {
-		type: Array
+		type: Array,
 	},
 	desiredEmployment: {
-		type: Object
+		type: Object,
 	},
 	onlineProfiles: {
-		type: Object
+		type: Object,
 	},
 	desiredPositions: {
-		type: Array
+		type: Array,
 	},
 	languages: {
-		type: Array
+		type: Array,
 	},
 	skills: {
-		type: Array
+		type: Array,
 	},
-	industries:{
-		type: Array
+	industries: {
+		type: Array,
 	},
-	workExperience:{
-		type: Array
+	workExperience: {
+		type: Array,
 	},
-	careerLevel:{
-		type: String
+	careerLevel: {
+		type: String,
 	},
-	createdAt:{
-		type: Date
+	createdAt: {
+		type: Date,
 	},
-	jobStatistics:{
-		type: Object
+	jobStatistics: {
+		type: Object,
 	},
-	jobComments:{
-		type: Array
+	jobComments: {
+		type: Array,
 	},
-	profileSecurity:{
-		type: Object
+	profileSecurity: {
+		type: Object,
 	},
-	helperInformation:{
-		type: Object
+	helperInformation: {
+		type: Object,
 	},
-	cv:{
-		type:Object
-    }
+	cv: {
+		type: Object,
+	},
 });
 
-var newUser  = module.exports = mongoose.model('PROD1', CandidateSchema, 'Candidates_C1');
+var newUser = (module.exports = mongoose.model(
+	"Candidates_C1",
+	CandidateSchema,
+	"Candidates_C1"
+));
 
-module.exports.getUserById = function(id, callback){
+module.exports.getUserById = function (id, callback) {
 	newUser.findById(id, callback);
-}
+};
 
-module.exports.getUserByEmail = function(email, callback){
-	var query = {email: email};
+module.exports.getUserByEmail = function (email, callback) {
+	var query = { email: email };
 	newUser.findOne(query, callback);
-}
+};
 
-module.exports.comparePassword = function(candidatePassword, hash, callback){
-	bcrypt.compare(candidatePassword, hash, function(err, isMatch) {
-    	callback(null, isMatch);
+module.exports.comparePassword = function (candidatePassword, hash, callback) {
+	bcrypt.compare(candidatePassword, hash, function (err, isMatch) {
+		callback(null, isMatch);
 	});
-}
+};
 
-module.exports.createUser = function(newUser, callback){
-	bcrypt.genSalt(10, function(err, salt) {
-    	bcrypt.hash(newUser.password, salt, function(err, hash) {
-   			newUser.password = hash;
-   			newUser.save(callback);
-    	});
+module.exports.createUser = function (newUser, callback) {
+	bcrypt.genSalt(10, function (err, salt) {
+		bcrypt.hash(newUser.password, salt, function (err, hash) {
+			newUser.password = hash;
+			newUser.save(callback);
+		});
 	});
-}
+};

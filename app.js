@@ -11,6 +11,7 @@ var db = mongoose.connection;
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var chronJob = require('./routes/chronJob');
 
 var app = express();
 
@@ -39,6 +40,7 @@ app.use(function(req, res, next) {
 });
 
 app.use('/', users);
+app.use('/', chronJob);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

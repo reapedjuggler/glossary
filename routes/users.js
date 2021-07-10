@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
-const axios = require("axios");
 var expressValidator = require("express-validator");
+const axios = require("axios");
 var bcrypt = require("bcryptjs");
 var crypto = require("crypto");
 var fs = require("fs");
@@ -68,6 +68,7 @@ router.get("/register", function (req, res, next) {
 router.get("/login", function (req, res, next) {
 	res.send("This is the GET login page");
 });
+
 
 router.post("/getcandidatestatus", async (req, res, next) => {
 	try {
@@ -655,6 +656,13 @@ router.post("/editprofile", async function (req, res) {
 
 		respFromC3.jobStatistics.partner = partnerData;
 		respFromC3.jobStatistics.client = clientData;
+
+		// The combined field for which we will insert combined and applied
+
+		jobStatisticsForC3.combined_applied_preferred = [
+			...jobStatisticsForC3.applied,
+			...jobStatisticsForC3.preffered,
+		];
 
 		var c3Data = { _id: prevId, jobStatistics: jobStatisticsForC3 };
 
@@ -1252,6 +1260,12 @@ router.post("/register", async function (req, res, next) {
 		// console.log(allJobIds, "\n-----------------\nIam the job ids\n");
 
 		jobStatistics.applied = allJobIds;
+
+		jobStatistics.combined_applied_preferred = [];
+		jobStatistics.combined_applied_preferred = [
+			...jobStatistics.applied,
+			...jobStatistics.preferred,
+		];
 
 		var dataFromCandidates_C2 = await User2.create(userTwoData);
 		var dataFromCandidates_C3 = await User3.create({

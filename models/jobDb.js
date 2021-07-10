@@ -10,7 +10,7 @@ var clientFxn = async function getClientJobs(clientJobs){
 
     await ClientJobs.find().then(async (jobs) =>{
 
-    jobs.forEach((job) => {
+    await jobs.forEach((job) => {
             // console.log(job.jobCode);
             if (clientJobs.includes(job.jobCode)) {
                 var tempAr = {
@@ -39,7 +39,7 @@ var partnerFxn = async function getPartnerJobs(partnerJobs){
 
     await PartnerJobs.find().then(async (jobs) =>{
 
-    jobs.forEach((job) => {
+    await jobs.forEach((job) => {
             // console.log(job);
             if (partnerJobs.includes(job.jobCode)) {
                 var tempAr = {
