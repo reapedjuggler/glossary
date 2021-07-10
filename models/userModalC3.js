@@ -6,7 +6,6 @@ const env = process.env;
 
 var db = mongoose.connection;
 mongoose.connect(env.srv, { useUnifiedTopology: true });
-// console.log("Connect ok");
 db.on("error", console.error.bind(console, "DB connection error:"));
 db.once("open", function () {
 	// we're connected!

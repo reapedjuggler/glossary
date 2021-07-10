@@ -190,16 +190,10 @@ router.post("/jobs/cronjob", async (req, res, next) => {
 	});
 });
 
-// also make the deactivating the profule logic over here
-
 router.post("/jobs/stopmatchmaking", async (req, res) => {
 	// find all the users whose active job seeking is true and they are inactive for 3 months
-
-	// db.gpsdatas.find({"createdAt" : { $gte : new ISODate("2012-01-12T20:15:31Z") }});
-
-	// db.inventory.find( { $and: [ { price: { $ne: 1.99 } }, { price: { $exists: true } } ] } )
-
 	// finding date which is older by 3months from today in mongodb
+
 	try {
 		var threeMonthsAgo = moment().subtract(3, "months");
 		// console.log(threeMonthsAgo, "\n\n");
@@ -246,7 +240,6 @@ router.post("/jobs/stopmatchmaking", async (req, res) => {
 });
 
 router.post("/jobs/deactivate", async (req, res, next) => {
-	// now put deactivating the profile's logic over here
 	// if anyone on the platform reg before 90 days	then switch activeJobSeeking --> false and mail them if still interested then click and activate again
 
 	cron.schedule("*/20 * * * * *", async (req, res, next) => {

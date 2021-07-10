@@ -3,7 +3,6 @@ var bcrypt = require("bcryptjs");
 require("dotenv").config();
 const env = process.env;
 
-// var url = "mongodb+srv://smurfette:rKvfAgK4AElQMw5C@cluster0.egtjb.mongodb.net/PROD?retryWrites=true&w=majority";
 
 var url = env.srv;
 
