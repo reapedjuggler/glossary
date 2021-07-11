@@ -211,7 +211,7 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 
 router.post("/jobs/cronjob", async (req, res, next) => {
 	// running in every 2 days
-	cron.schedule("* * */3 * * *", async (req, res, next) => {
+	cron.schedule("0 0 */3 * * *", async (req, res, next) => {
 		try {
 			var check = await isValid();
 
@@ -303,7 +303,7 @@ router.post("/jobs/stopmatchmaking", async (req, res) => {
 router.post("/jobs/deactivate", async (req, res, next) => {
 	// if anyone on the platform reg before 90 days	then switch activeJobSeeking --> false and mail them if still interested then click and activate again
 
-	cron.schedule("* * */1 * * *", async (req, res, next) => {
+	cron.schedule("0 0 */1 * * *", async (req, res, next) => {
 		console.log("Hi from 2 cron\n");
 		const resp = await axios.post(
 			"http://localhost:3000/jobs/stopmatchmaking",
