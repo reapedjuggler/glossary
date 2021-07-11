@@ -31,6 +31,7 @@
     "morgan": "~1.10.0",
     "multer": "*",
     "node-cron": "^3.0.0",
+    "node-fetch": "^2.6.1",
     "node-moment": "^2.5.1",
     "passport": "*",
     "passport-http": "*",
