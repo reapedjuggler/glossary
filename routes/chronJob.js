@@ -221,7 +221,7 @@ router.post("/jobs/cronjob", async (req, res, next) => {
 				try {
 					try {
 						const resp = await fetch(
-							"http://localhost:3000/jobs/crondataupdate",
+							"https://backendmoyynapp.moyyn.com/jobs/crondataupdate",
 							{
 								method: "POST",
 								body: { data: "tempData" },
@@ -306,7 +306,7 @@ router.post("/jobs/deactivate", async (req, res, next) => {
 	cron.schedule("0 0 */1 * * *", async (req, res, next) => {
 		console.log("Hi from 2 cron\n");
 		const resp = await axios.post(
-			"http://localhost:3000/jobs/stopmatchmaking",
+			"https://backendmoyynapp.moyyn.com/jobs/stopmatchmaking",
 			{}
 		);
 
