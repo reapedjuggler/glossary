@@ -80,13 +80,9 @@ router.post("/getcandidatestatus", async (req, res, next) => {
 
 		if (resp == null) {
 			res.send({ success: false });
+		} else {
+			res.send({ success: true, message: resp.CandidateLive });
 		}
-
-		// const resp1 = await admin.find({});
-
-		// console.log(resp1, "\nIam the resp1\n\n");
-
-		res.send({ success: true, message: resp.CandidateLive });
 	} catch (err) {
 		console.log(err, "\n\nIam the err\n");
 		res.send({ success: false, message: "Error in finding status" });
