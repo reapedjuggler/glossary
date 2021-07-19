@@ -14,8 +14,8 @@ var mailForDelete = require("./mailDeleteProfile");
 var User = require("../models/userModel");
 var User2 = require("../models/userModalC2");
 var User3 = require("../models/userModalC3");
-var Job = require("../models/ClientJobModel");
 var admin = require("../models/adminControl");
+var Job = require("../models/ClientJobModel");
 
 // Momatch and other data
 var PartnerJobs = require("../models/PartnerJobModel");
@@ -68,7 +68,6 @@ router.get("/register", function (req, res, next) {
 router.get("/login", function (req, res, next) {
 	res.send("This is the GET login page");
 });
-
 
 router.post("/getcandidatestatus", async (req, res, next) => {
 	try {
@@ -552,7 +551,7 @@ router.post("/editprofile", async function (req, res) {
 		// );
 
 		var profileSecurity = tempSec[0].profileSecurity;
-		profileSecurity.lastProfileUpdateAt = new Date().toLocaleString();
+		profileSecurity.lastProfileUpdateAt = new Date();
 
 		userData.profileSecurity = profileSecurity;
 
@@ -773,7 +772,7 @@ router.post("/editprofile", async function (req, res) {
 		// console.log(err, "\n\n----------------\nIam err\n");
 		res.send({
 			success: false,
-			msg: err,
+			msg: "Error",
 		});
 	}
 });
@@ -1130,7 +1129,7 @@ router.post("/register", async function (req, res, next) {
 		userData.skills = skills;
 		userData.workExperience = workExperience;
 		userData.languages = languages;
-		userData.createdAt = new Date().toLocaleString();
+		userData.createdAt = new Date();
 		// userData.jobComments = null;
 
 		var cv = {};
@@ -1197,16 +1196,16 @@ router.post("/register", async function (req, res, next) {
 		var clientData = await clientFxn(momatchResult.client);
 		var partnerData = await partnerFxn(momatchResult.partner);
 
-		console.log(
-			momatchResult,
-			"\nIam the momatch\n",
-			clientData,
-			"\n\n",
-			partnerData,
-			"\n\n"
-		);
+		// console.log(
+		// 	momatchResult,
+		// 	"\nIam the momatch\n",
+		// 	clientData,
+		// 	"\n\n",
+		// 	partnerData,
+		// 	"\n\n"
+		// );
 
-		console.log("The client and partner data\n");
+		// console.log("The client and partner data\n");
 
 		var newUserData = new User(userData);
 

@@ -17,6 +17,11 @@ const matchMakingMail = require("./matchmakingMail");
 
 const db = mongoose.connection;
 
+require("dotenv").config();
+const env = process.env;
+const localurl = env.localurl;
+const produrl = env.produrl;
+
 var isValid = async () => {
 	// check with the existing array that if jobs are changed or not if they are changed return true else return false;
 
@@ -29,211 +34,188 @@ var isValid = async () => {
 };
 
 router.post("/jobs/crondataupdate", async (req, res, next) => {
-	var allUsers = await User.find({ activeJobSeeking: true }); // check for the active field activeJobSeeking --> true
+	var allUsers = await User.find({
+		_id: "2f419a1901de1dd2e15f7ad213bf0bc05879ea33c04dbdcc4669c5a386e6f4cf",
+	}); // check for the active field activeJobSeeking --> true
 
 	allUsers = allUsers; // change this and make this for all the users
 
-	// console.log(allUsers[0], "\n\n");
-
 	try {
-		await allUsers.forEach(async ele => {
-			try {
-				var data = ele,
-					prevId = ele._id;
+		if (allUsers != null && allUsers.length > 0) {
+			await allUsers.forEach(async ele => {
+				try {
+					var data = ele,
+						prevId = ele._id;
 
-				console.log(ele._id, "\n\n");
+					console.log(ele._id, "\nIam id in route\n\n");
 
-				desiredPositions = data["desiredPositions"];
+					desiredPositions = data["desiredPositions"];
 
-				let desiredJobDetails = [];
+					let desiredJobDetails = [];
 
-				if (desiredPositions !== null && desiredPositions.length > 0) {
-					await desiredPositions.forEach(async ele => {
-						if (ele[ele.length - 1] == ")") {
-							if (
-								ele[ele.length - 2] === " " &&
-								ele[ele.length - 3] >= "0" &&
-								ele[ele.length - 3] <= "9"
-							) {
-								let dataFromJob = "";
+					if (desiredPositions !== null && desiredPositions.length > 0) {
+						await desiredPositions.forEach(async ele => {
+							if (ele[ele.length - 1] == ")") {
+								if (
+									ele[ele.length - 2] === " " &&
+									ele[ele.length - 3] >= "0" &&
+									ele[ele.length - 3] <= "9"
+								) {
+									let dataFromJob = "";
 
-								for (let i = ele.length - 3; ele[i] != " "; i--) {
-									dataFromJob = ele[i] + dataFromJob;
+									for (let i = ele.length - 3; ele[i] != " "; i--) {
+										dataFromJob = ele[i] + dataFromJob;
+									}
+
+									if (dataFromJob.length) desiredJobDetails.push(dataFromJob);
 								}
-
-								if (dataFromJob.length) desiredJobDetails.push(dataFromJob);
 							}
-						}
+						});
+					}
+
+					let allJobIds = [];
+
+					for (let i = 0; i < desiredJobDetails.length; i++) {
+						let jobId = await ClientJobModel.findOne({
+							jobCode: desiredJobDetails[i],
+						});
+
+						allJobIds.push(jobId._id);
+					}
+
+					var jobStatisticsForC3 = await User3.findOne({ _id: ele._id });
+
+					jobStatisticsForC3.applied = allJobIds;
+
+					var momatchData = {};
+					var candidate = {};
+					candidate.city = data["city"];
+					candidate.relocationWillingnessFlag =
+						data["relocationWillingnessFlag"];
+					candidate.careerLevel = data["careerLevel"];
+					candidate.skills = data["skills"];
+					candidate.languages = data["languages"];
+					momatchData.candidate = candidate;
+
+					const resp = await axios.post(momatchUrl, momatchData, {
+						headers: { "Content-Type": "application/json" },
 					});
+
+					var momatchResult = resp.data;
+
+					// console.log(momatchResult, "\nIam the mo match data\n\n");
+
+					var clientData = await clientFxn(momatchResult.client);
+					var partnerData = await partnerFxn(momatchResult.partner);
+					// console.log(partnerData);
+
+					jobStatisticsForC3.jobStatistics.partner = partnerData;
+					jobStatisticsForC3.jobStatistics.client = clientData;
+
+					jobStatisticsForC3.jobStatistics.combined_applied_preferred =
+						jobStatisticsForC3.jobStatistics.combined_applied === undefined
+							? []
+							: jobStatisticsForC3.jobStatistics.combined_applied;
+
+					console.log(jobStatisticsForC3, "\n\n Iam job Statistics \n\n");
+
+					if (
+						jobStatisticsForC3.jobStatistics.applied &&
+						jobStatisticsForC3.jobStatistics.applied.length > 0
+					) {
+						for (
+							let i = 0;
+							i < jobStatisticsForC3.jobStatistics.applied.length;
+							i++
+						)
+							jobStatisticsForC3.jobStatistics.combined_applied_preferred.push(
+								jobStatisticsForC3.jobStatistics.applied[i]
+							);
+					}
+
+					if (
+						jobStatisticsForC3.jobStatistics.preferred &&
+						jobStatisticsForC3.jobStatistics.preferred.length > 0
+					) {
+						for (
+							let i = 0;
+							i < jobStatisticsForC3.jobStatistics.preferred.length;
+							i++
+						)
+							jobStatisticsForC3.jobStatistics.combined_applied_preferred.push(
+								jobStatisticsForC3.jobStatistics.preferred[i]
+							);
+					}
+
+					var c3Data = {
+						_id: prevId,
+						jobStatistics: jobStatisticsForC3.jobStatistics,
+					};
+
+					var updResp = await User3.findOneAndUpdate(
+						{ _id: prevId },
+						{ $set: c3Data }
+					);
+
+					// console.log("Done!!!!!!!!!!!!!!\n\n");
+				} catch (err) {
+					console.log(
+						err.message,
+						"\nError inside the cron job in jobs cron\n\n"
+					);
+					throw new Error(err.message);
 				}
-
-				let allJobIds = [];
-
-				for (let i = 0; i < desiredJobDetails.length; i++) {
-					let jobId = await ClientJobModel.findOne({
-						jobCode: desiredJobDetails[i],
-					});
-
-					allJobIds.push(jobId._id);
-				}
-
-				var jobStatisticsForC3 = await User3.findOne({ _id: ele._id });
-
-				jobStatisticsForC3.applied = allJobIds;
-
-				var momatchData = {};
-				var candidate = {};
-				candidate.city = data["city"];
-				candidate.relocationWillingnessFlag = data["relocationWillingnessFlag"];
-				candidate.careerLevel = data["careerLevel"];
-				candidate.skills = data["skills"];
-				candidate.languages = data["languages"];
-				momatchData.candidate = candidate;
-
-				// console.log(momatchData, "\niam the mo match data\n before request");
-
-				// var momatchResult = await momatchFxn(momatchData);
-				// console.log(momatchResult);
-				const resp = await axios.post(momatchUrl, momatchData, {
-					headers: { "Content-Type": "application/json" },
-				});
-
-				var momatchResult = resp.data;
-
-				// console.log(momatchResult, "\nIam the mo match data\n\n");
-
-				var clientData = await clientFxn(momatchResult.client);
-				var partnerData = await partnerFxn(momatchResult.partner);
-				// console.log(partnerData);
-
-				jobStatisticsForC3.jobStatistics.partner = partnerData;
-				jobStatisticsForC3.jobStatistics.client = clientData;
-
-				console.log(
-					jobStatisticsForC3.jobStatistics.partner,
-					"\n\n",
-					jobStatisticsForC3.jobStatistics.client,
-					"\n\nIam the data\n"
-				);
-
-				// The combined field for which we will insert combined and applied
-
-				jobStatisticsForC3.jobStatistics.combined_applied_preferred =
-					jobStatisticsForC3.jobStatistics.combined_applied === undefined
-						? []
-						: jobStatisticsForC3.jobStatistics.combined_applied;
-
-				// was first populated with "hello_this_is_testing"
-
-				// jobStatisticsForC3.jobStatistics.combined_applied_preferred = [
-				// 	...jobStatisticsForC3.jobStatistics.applied,
-				// 	...jobStatisticsForC3.jobStatistics.preferred,
-				// ];
-
-				console.log(jobStatisticsForC3, "\n\n Iam job Statistics \n\n");
-
-				if (
-					jobStatisticsForC3.jobStatistics.applied &&
-					jobStatisticsForC3.jobStatistics.applied.length > 0
-				) {
-					for (
-						let i = 0;
-						i < jobStatisticsForC3.jobStatistics.applied.length;
-						i++
-					)
-						jobStatisticsForC3.jobStatistics.combined_applied_preferred.push(
-							jobStatisticsForC3.jobStatistics.applied[i]
-						);
-				}
-
-				if (
-					jobStatisticsForC3.jobStatistics.preferred &&
-					jobStatisticsForC3.jobStatistics.preferred.length > 0
-				) {
-					for (
-						let i = 0;
-						i < jobStatisticsForC3.jobStatistics.preferred.length;
-						i++
-					)
-						jobStatisticsForC3.jobStatistics.combined_applied_preferred.push(
-							jobStatisticsForC3.jobStatistics.preferred[i]
-						);
-				}
-
-				var c3Data = {
-					_id: prevId,
-					jobStatistics: jobStatisticsForC3.jobStatistics,
-				};
-
-				var updResp = await User3.findOneAndUpdate(
-					{ _id: prevId },
-					{ $set: c3Data }
-				);
-
-				// console.log("Done!!!!!!!!!!!!!!\n\n");
-			} catch (err) {
-				console.log(
-					err.message,
-					"\nError inside the cron job in jobs cron\n\n"
-				);
-				throw new Error(err.message);
-			}
-			// console.log(updResp, " \nIam the updated Response\n");
-		});
-
-		var prevJobs = [];
-
-		prevJobs = await jobDetails.find({});
-
-		// console.log(prevJobs, "Iam the orevJob\n");
-
-		var allNewJobs = await ClientJobModel.find({
-			_id: { $nin: prevJobs },
-		});
-
-		// console.log(allNewJobs, "\n All the new Jobs\n");
-
-		await allNewJobs.forEach(async ele => {
-			let insertedDoc = await jobDetails.update({ _id: ele._id }, ele._id, {
-				upsert: true,
+				// console.log(updResp, " \nIam the updated Response\n");
 			});
-			// console.log(insertedDoc, "\n\nIam the inserted Doc\n\n");
-		});
 
-		// console.log("Done!!!\n\n");
+			var prevJobs = [];
 
-		res.send({ success: true, message: "Success" });
+			prevJobs = await jobDetails.find({});
+
+			// console.log(prevJobs, "Iam the orevJob\n");
+
+			var allNewJobs = await ClientJobModel.find({
+				_id: { $nin: prevJobs },
+			});
+
+			console.log(allNewJobs, "\n All the new Jobs\n");
+
+			await allNewJobs.forEach(async ele => {
+				let insertedDoc = await jobDetails.update({ _id: ele._id }, ele._id, {
+					upsert: true,
+				});
+				// console.log(insertedDoc, "\n\nIam the inserted Doc\n\n");
+			});
+
+			// console.log("Done!!!\n\n");
+
+			res.send({ success: true, message: "Success" });
+		}
 	} catch (err) {
 		console.log(err, "\n\n Iam the error in cron");
-		return { success: false, message: err };
+		return { success: false, message: "Error" };
 	}
 });
 
 router.post("/jobs/cronjob", async (req, res, next) => {
 	// running in every 2 days
-	cron.schedule("0 0 */3 * * *", async (req, res, next) => {
+	cron.schedule("*/20 * * * * *", async (req, res, next) => {
 		try {
 			var check = await isValid();
 
-			if (check === true) {
+			if (true) {
 				// if we have a new job we need to send notification to the user
 
 				try {
 					try {
-						const resp = await fetch(
-							"https://backendmoyynapp.moyyn.com/jobs/crondataupdate",
-							{
-								method: "POST",
-								body: { data: "tempData" },
-							}
-						);
-
-						console.log(resp, "\nAll done\n");
+						const resp = await fetch(produrl + "/jobs/crondataupdate", {
+							method: "POST",
+							body: { data: "tempData" },
+						});
 					} catch (err) {
 						console.log(err, "\n\nError in axios in jobs cron\n\n");
 					}
 				} catch (err) {
-					console.log(err, "\n Iam the error in cron\n");
 					res.send({
 						success: false,
 						message: "Cron Job stopped due to error with axios",
@@ -257,13 +239,11 @@ router.post("/jobs/stopmatchmaking", async (req, res) => {
 
 	try {
 		var threeMonthsAgo = moment().subtract(3, "months");
-		// console.log(threeMonthsAgo, "\n\n");
-		console.log(threeMonthsAgo.format(), "\n\n");
 		threeMonthsAgo = threeMonthsAgo.format();
 
 		// threeMonthsAgo = isodate(threeMonthsAgo);
 
-		console.log(threeMonthsAgo, "\n\n");
+		console.log(threeMonthsAgo, "\nIam inside stop matchmakings\n");
 
 		const query = {
 			$and: [
@@ -276,24 +256,20 @@ router.post("/jobs/stopmatchmaking", async (req, res) => {
 			],
 		};
 
-		console.log(query, "\n\n Iam the query");
-
 		const resp = await db.collection("Candidates_C1").find(query).toArray();
 
-		resp.forEach(async ele => {
-			// turn activeJobSeeking == false
+		if (resp != null && resp != []) {
+			resp.forEach(async ele => {
+				const updResp = await db
+					.collection("Candidates_C1")
+					.findOneAndUpdate(
+						{ _id: ele._id },
+						{ $set: { activeJobSeeking: false } }
+					);
 
-			const updResp = await db
-				.collection("Candidates_C1")
-				.findOneAndUpdate(
-					{ _id: ele._id },
-					{ $set: { activeJobSeeking: false } }
-				);
-
-			await matchMakingMail(ele.email, ele.firstName + " " + ele.lastName);
-		});
-
-		console.log(resp, "\nIam the resp\n");
+				await matchMakingMail(ele.email, ele.firstName + " " + ele.lastName);
+			});
+		}
 	} catch (err) {
 		console.log(err, "\nIam err in deactivate\n");
 		res.send("Error in cron");
@@ -305,10 +281,7 @@ router.post("/jobs/deactivate", async (req, res, next) => {
 
 	cron.schedule("0 0 */1 * * *", async (req, res, next) => {
 		console.log("Hi from 2 cron\n");
-		const resp = await axios.post(
-			"https://backendmoyynapp.moyyn.com/jobs/stopmatchmaking",
-			{}
-		);
+		const resp = await axios.post(produrl + "/jobs/stopmatchmaking", {});
 
 		console.log(resp.data, " Iam the resp in deactivating route");
 	});
@@ -348,3 +321,88 @@ module.exports = router;
 // );
 
 // console.log("The client and partner data\n");
+
+/**
+ * Paste one or more documents here
+ */
+// {
+//     "countryPreferences": ["Germany"],
+//     "cityPreferences": ["Berlin", "Munich", "Frankfurt am Main", "Stuttgart"],
+//     "desiredPositions": ["Head of IT and Infrastructure (m/w/d) - BM21_1309"],
+//     "languages": [{
+//         "language": "Dutch",
+//         "level": "Native"
+//     }, {
+//         "language": "English",
+//         "level": "C1"
+//     }, {
+//         "language": "French",
+//         "level": "B2"
+//     }, {
+//         "language": "German",
+//         "level": "B1"
+//     }, {
+//         "language": "Spanish; Castilian",
+//         "level": "B2"
+//     }],
+//     "skills": ["Veeam", "Microsoft Exchange", "Microsoft Servers", "Microsoft Windows Azure", "VMware", "MDM", "Microsoft Certified Professional", "Active Directory", "Microsoft technologies", "Dell", "HP", "VMware ESXi", "Infrastructure architecture", "Cloud", "IT project management"],
+//     "industries": ["Information Technology and Services", "Airlines/Aviation", "Government Relations", "Staffing and Recruiting"],
+//     "workExperience": [{
+//         "Category": "IT Operations",
+//         "Role": "System Administrator",
+//         "Experience": 4
+//     }],
+//     "firstName": "Olivier",
+//     "lastName": "Van Damme",
+//     "email": "olivier.van.damme@gmail.com",
+//     "activeJobSeeking": true,
+//     "termsAndPrivacyFlag": true,
+//     "relocationWillingnessFlag": true,
+//     "desiredEmployment": {
+//         "remote": false,
+//         "partTime": false,
+//         "fulltime": true,
+//         "freelance": false
+//     },
+//     "onlineProfiles": {
+//         "Stackoverflow": "",
+//         "LinkedIn": "https://www.linkedin.com/in/oliviervandamme/",
+//         "Github": "",
+//         "Xing": "https://www.xing.com/profile/Olivier_VanDamme/cv",
+//         "Dribbble": "",
+//         "Behance": "",
+//         "Other": ""
+//     },
+//     "country": "Belgium",
+//     "city": "Hoboken",
+//     "visaType": "EU Citizen",
+//     "earliestJoiningDate": "13-05-2013",
+//     "currentlyEmployedFlag": true,
+//     "drivingPermitFlag": true,
+//     "contactNumber": "+32473959620",
+//     "noticePeriod": 3,
+//     "careerLevel": "Senior",
+//     "createdAt": {
+//         "$date": "2021-06-14T20:16:40.951Z"
+//     },
+//     "cv": {
+//         "filename": "olivier_van_damme_2db9b868b39cf6c9.pdf",
+//         "english": true,
+//         "german": false
+//     },
+//     "profileSecurity": {
+//         "ipHistory": [],
+//         "lastProfileUpdateAt": "2021-06-14T20:16:40.951Z",
+//         "lastDataRequestAt": null,
+//         "emailVerificationFlag": false,
+//         "resetPasswordFlag": false,
+//         "password": "$2a$10$x0JIbRbaeVKoeyLyUjdQ5.PnTQgzKivnca/znxoVmX55FebFreSiq"
+//     },
+//     "helperInformation": {
+//         "source": "Node-App",
+//         "profileCompleteFlag": true,
+//         "formattedBy": "back-end",
+//         "dataVerificationFlag": true
+//     },
+//     "__v": 0
+// }
