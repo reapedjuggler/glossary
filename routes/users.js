@@ -71,7 +71,6 @@ router.get("/login", function (req, res, next) {
 
 router.post("/getcandidatestatus", async (req, res, next) => {
 	try {
-		console.log(req.body);
 		const { id } = req.body;
 
 		const resp = await admin.findOne({ _id: ObjectId(id) });
@@ -84,7 +83,7 @@ router.post("/getcandidatestatus", async (req, res, next) => {
 			res.send({ success: true, message: resp.CandidateLive });
 		}
 	} catch (err) {
-		console.log(err, "\n\nIam the err\n");
+		console.log(err, "\n\nIam the err getcandidatesstatus\n");
 		res.send({ success: false, message: "Error in finding status" });
 	}
 });
@@ -96,11 +95,11 @@ router.post("/login", function (req, res) {
 
 	User.getUserByEmail(email, function (err, user) {
 		if (err) {
-			console.log(err, "\nFirst err in logging in\n");
+			// console.log(err, "\nFirst err in logging in\n");
 			throw err;
 		}
 		if (!user) {
-			console.log("No user with this email\n\n");
+			// console.log("No user with this email\n\n");
 			res.send({
 				success: false,
 				msg: "Login Unsuccessful.",
@@ -134,9 +133,9 @@ router.post("/login", function (req, res) {
 			);
 		} else {
 			// console.log(user.profileSecurity.dummyPassword);
-			console.log("Loggin in \n");
+			// console.log("Loggin in \n");
 			if (user.profileSecurity.dummyPassword == password) {
-				console.log("You are now logged in Succesfully!");
+				// console.log("You are now logged in Succesfully!");
 				userData = user;
 				res.send({
 					success: true,
@@ -188,7 +187,7 @@ router.post("/forgotpassword", async (req, res) => {
 			msg: "Password Mail Sent!",
 		});
 	} catch (err) {
-		console.log(err, " \nIam the err occured\n");
+		console.log(err, " \nIam the err occured in forgot password\n");
 		res.send({
 			success: false,
 			err: err,

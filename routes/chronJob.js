@@ -181,9 +181,7 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 			console.log(allNewJobs, "\n All the new Jobs\n");
 
 			await allNewJobs.forEach(async ele => {
-				let insertedDoc = await jobDetails.update({ _id: ele._id }, ele._id, {
-					upsert: true,
-				});
+				await jobDetails.create({ _id: ele._id });
 				// console.log(insertedDoc, "\n\nIam the inserted Doc\n\n");
 			});
 
@@ -406,3 +404,68 @@ module.exports = router;
 //     },
 //     "__v": 0
 // }
+
+/**
+ * Paste one or more documents here
+ */
+
+// {
+//     "Industries": ["Insurance"],
+//     "Skills": ["microsoft windows azure"],
+//     "shortlisted": [],
+//     "hired": [],
+//     "rejected": [],
+//     "recommended": [],
+//     "company": {
+//         "$oid": "60c1cc183be7891b11e934ed"
+//     },
+//     "jobTitle": "IT systems administrator AE21 (m/w/d)",
+//     "jobUrl": "https://moyyn.com",
+//     "requirements": "Ihr Profil\n– (Fach)Hochschulabschluss, vorzugsweise im Bereich Informatik oder eine Ausbildung zum Fachinformatiker; alternativ Quereinsteiger mit entsprechender Berufserfahrung\n– Je nach Vorbildung 2 bis 5 Jahre an Berufserfahrung im IT-Umfeld\nFundierte und praktische Erfahrung mit Oracle 11/12 in einem Unternehmen, idealerweise auch im Cluster (RAC)\n– Gute Kenntnisse der Betriebssysteme Linux (Schwerpunkt) und Windows im Zusammenhang mit Oracle sowie Programmierkenntnisse in SQL, PL/SQL und Unix-Shellscripts\n– Erste Projekterfahrungen mit einer ausgeprägten selbstständigen und eigenverantwortlichen Arbeitsweise\n– Sehr gute mündliche und schriftliche Kommunikationsfähigkeiten, insbesondere in Deutsch (B1-C2) und Englisch\n– Die Bereitschaft, auch unsere interne IT-Hotline zu unterstützen\nAgile sowie proaktive Herangehensweise und Hands-On Mentalität\nBewerbungen von Menschen mit Behinderung werden bei gleicher Qualifikation bevorzugt berücksichtigt.\n\nEs erwartet Sie:\n\n– Die Möglichkeit, sowohl im Büro in München als auch ortsunabhängig in Deutschland zu arbeiten\n– Eine leistungsgerechte Vergütung verbunden mit flexiblen Arbeitszeiten und Smart Working sowie 30 Tagen Urlaub\n– Ein hohes Maß an Eigenverantwortung und Gestaltungsfreiheit, viel Raum zur persönlichen Weiterentwicklung\n– Ein spannendes und dynamisches Umfeld mit kurzen Entscheidungswegen.\n– Ein internationales Team, das gemeinsam unseren erfolgreichen Wachstumskurs vorantreibt mit dem Ziel, den Status als zuverlässigstes Care Unternehmen halten und ausbauen zu können\n– Internationale Entwicklungsmöglichkeiten\n– Attraktive Altersvorsorgebausteine (Vermögenswirksame Leistungen sowie eine Direktgeldumwandlung mit Arbeitgeberzuschuss)\n\nGehalt: 60000€ – 80000€",
+//     "description": "Unser Kunde ist eine in München ansässige Versicherungsgruppe, die innovative Versicherungs- und Serviceprodukte in den Bereichen Reisen, Mobilität, Home & Connected Living, Gesundheit und Seniorenbetreuung anbietet.\n\nIhre Aufgabe\nIn dieser vielfältigen Aufgabe als IT-Systemadministrator (m/w/d) bzw. Fachinformatiker (w/m/d) sind Sie für die Betreuung unserer Oracle-Datenbanken sowie der zugehörigen Linux-Server zuständig. Mit Beginn der zweiten Jahreshälfte startet ein spannendes Projekt. Sie werden dabei in den nächsten 12 Monaten Ihre IT-Kollegen/innen bei der Migration der Systeme in die Cloud (Microsoft Azure) unterstützen. Dabei sind Sie Teil eines motivierten, internationalen und sehr kollegialen Teams von IT-Profis.\n\nIhre Hauptaufgaben sind:\n\n– Administration, Konfiguration und Optimierung unserer Oracle-Datenbanken in einem Cluster (RAC) sowie der zugehörigen Standby- und Testsysteme\n– Sicherstellung der Verfügbarkeit und Wiederherstellbarkeit dieser Datenbanken\n– Abstimmung von Schnittstellen mit den Fachabteilungen und mit Großkunden\n– Verarbeitung und Optimierung von Datenloads\n– Planung und Durchführung von Upgrades\n– Administration der eingesetzten Systeme auf Basis von Linux\n– Mitwirkung bei der Erstellung von Konzepten und Dokumentationen für unsere IT-Systeme\n– Mitarbeit bei lokalen Projekten und internationalen Projekten\n– Aktive Gestaltung des Themas Informationssicherheit im eigenen Bereich",
+//     "careerLevel": "Senior",
+//     "Date": "12-07-2021",
+//     "Languages": [{
+//         "_id": {
+//             "$oid": "60ebffb7fff3180b4fa4f842"
+//         },
+//         "language": "German",
+//         "level": "B2"
+//     }],
+//     "workExperience": [{
+//         "_id": {
+//             "$oid": "60ebffb7fff3180b4fa4f843"
+//         },
+//         "Category": "IT Operations",
+//         "Role": "System Administrator",
+//         "Experience": 2
+//     }],
+//     "city": "Munich",
+//     "country": "Germany",
+//     "state": "Bavaria",
+//     "postcode": "80331",
+//     "currency": "Euro",
+//     "from": 60000,
+//     "to": 79998,
+//     "otherCountries": false,
+//     "timestamp": {
+//         "$date": "2021-07-19T13:46:18.020Z"
+//     },
+//     "ifDeleted": false,
+//     "jobCodeUnique": 2,
+//     "jobCode": "47_CL_0_45",
+//     "__v": 0
+// }
+
+// {
+//             "job_id": {
+//                 "$oid": "60c1cd7f3be7891b11e934ee"
+//             },
+//             "jobcode": "0_CL_0_1",
+//             "description": "Für unseren Partner, suchen wir Senior Backend Engineer/ System Architect\n\nWas sind Deine Aufgaben?\n\n– Du konzipierst, diskutierst und präsentierst die Strukturen unseres Backends basierend auf den Anforderungen unserer Geschäftslogik. Dabei stellst du sicher, dass unser Backend stets flexibel anpassbar, skalierbar und zukunftsfest bleibt.\n– Du kennst Dich aus mit Node.js, MongoDB, Vue.js, Firebase und Flutter.\n– Du identifizierst Verbesserungspotenziale in Struktur und Code unseres Backends und treibst Diskussionen und Entscheidungen zu deren Realisierung voran.\n– Du gestaltest mit, welche Technologien und Dienste wir einsetzen und kommunizierst technische Sachverhalte sowohl an interne und externe Stakeholder.\n– Du coachst andere Entwickler bei der Realisierung unseres Backends. Du entwickelst selbst mit und implementierst backendseitige Funktionalitäten.\n– Du prüfst, bewertest und gestaltest Arbeitsprozesse im Entwicklerteam, um die Einhaltung von Best Practices und modernen Standards sicherzustellen.\n\nWas erwartet Dich?\n\n– Ein State-of-the-Art Tech-Stack\n– Impact. Als Architekt und Senior Engineer hast Du federführend Einfluss auf die Konzeption und Umsetzung unseres Backends. Du wirkst nicht nur maßgeblich bei dessen Strukturierung mit, sondern auch bei der Zusammensetzung unseres Technologie Stacks und der eingesetzten Dienste.\n– Entfaltung. Kontinuierliches Lernen ist die Basis für persönliche Weiterentwicklung. Wir räumen Arbeitszeit für die freie Beschäftigung mit Wunschthemen ein. Wir zahlen Kurse und Fortbildungen.\n– Purpose. Wir machen Unternehmen digitaler und sicherer. Wir bieten die Infrastruktur für moderne Organisationen und Arbeitsformen.\n– Team. Du arbeitest mit einer internationalen Truppe von Entwicklern, Designern, Produktmanagern und Testern, die zusammen gewinnen möchte.\n\n",
+//             "title": "Senior Backend Engineer/ System Architect/ CTO – SW20_1",
+//             "location": {
+//                 "country": "Germany",
+//                 "city": "Hamburg"
+//             }
+//         }
