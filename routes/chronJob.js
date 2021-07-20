@@ -200,7 +200,7 @@ router.post("/jobs/cronjob", async (req, res, next) => {
 
 				try {
 					try {
-						const resp = await fetch(localurl + "/jobs/crondataupdate", {
+						const resp = await fetch(produrl + "/jobs/crondataupdate", {
 							method: "POST",
 							body: { data: "tempData" },
 						});
