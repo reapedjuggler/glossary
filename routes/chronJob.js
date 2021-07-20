@@ -270,7 +270,7 @@ router.post("/jobs/deactivate", async (req, res, next) => {
 
 	cron.schedule("*/10 * * * * *", async (req, res, next) => {
 		console.log("Hi from 2 cron\n");
-		const resp = await axios.post(produrl + "/jobs/stopmatchmaking", {});
+		const resp = await axios.post(localurl + "/jobs/stopmatchmaking", {});
 
 		console.log(resp.data, " Iam the resp in deactivating route");
 	});
