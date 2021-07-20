@@ -191,9 +191,11 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 
 router.post("/jobs/cronjob", async (req, res, next) => {
 	// running in every 2 days
-	cron.schedule("0 0 0 */3 * *", async (req, res, next) => {
+	cron.schedule("*/10 * * * * *", async (req, res, next) => {
 		try {
 			var check = await isValid();
+
+			console.log(check, "\nInside jobs/cronjob\n\n");
 
 			if (true) {
 				// if we have a new job we need to send notification to the user
@@ -232,7 +234,7 @@ router.post("/jobs/stopmatchmaking", async (req, res) => {
 		var threeMonthsAgo = moment().subtract(3, "months");
 		threeMonthsAgo = threeMonthsAgo.format();
 
-		console.log(threeMonthsAgo, "Iam inside jobs/stopmatchmaking\n");
+		console.log(threeMonthsAgo, "\nIam inside jobs/stopmatchmaking\n");
 
 		const query = {
 			$and: [
@@ -246,6 +248,8 @@ router.post("/jobs/stopmatchmaking", async (req, res) => {
 		};
 
 		const resp = await db.collection("Candidates_C1").find(query).toArray();
+
+		console.log(resp.length, "\nIam 3 months old candidates\n");
 
 		if (resp != null && resp != []) {
 			resp.forEach(async ele => {
@@ -270,9 +274,10 @@ router.post("/jobs/deactivate", async (req, res, next) => {
 
 	cron.schedule("*/10 * * * * *", async (req, res, next) => {
 		console.log("Hi from 2 cron\n");
-		const resp = await axios.post(localurl + "/jobs/stopmatchmaking", {});
+		const resp = await axios.post(produrl + "/jobs/stopmatchmaking", {});
 
 		console.log(resp.data, " Iam the resp in deactivating route");
+		res.send("Working Fine");
 	});
 });
 

@@ -697,12 +697,12 @@ router.post("/editprofile", async function (req, res) {
 					fs.readFile(
 						"cvData/English_CV/" + cvEnglish.fileName,
 						(err, fileData) => {
-							console.log(
-								fileData,
-								"\n------------\n\n",
-								decodedBase64English,
-								"\n---------------\n\n"
-							);
+							// console.log(
+							// 	fileData,
+							// 	"\n------------\n\n",
+							// 	decodedBase64English,
+							// 	"\n---------------\n\n"
+							// );
 
 							s3.putObject(
 								{
@@ -1006,12 +1006,12 @@ router.post("/register", async function (req, res, next) {
 					fs.readFile(
 						"cvData/English_CV/" + cvEnglish.fileName,
 						(err, fileData) => {
-							console.log(
-								fileData,
-								"\n------------\n\n",
-								decodedBase64English,
-								"\n---------------\n\n"
-							);
+							// console.log(
+							// 	fileData,
+							// 	"\n------------\n\n",
+							// 	decodedBase64English,
+							// 	"\n---------------\n\n"
+							// );
 
 							s3.putObject(
 								{
