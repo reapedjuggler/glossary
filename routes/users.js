@@ -1450,3 +1450,78 @@ module.exports = router;
         "english": true
     }
 */
+
+// {
+//     "countryPreferences": ["Germany"],
+//     "cityPreferences": ["Berlin", "Munich", "Hamburg-Nord", "Rostock", "Leipzig"],
+//     "desiredPositions": ["HR Generalist (m/w/d) - BM21_1296"],
+//     "languages": [{
+//         "language": "German",
+//         "level": "Native"
+//     }, {
+//         "language": "English",
+//         "level": "Native"
+//     }],
+//     "skills": [".NET", ".NET Remoting", "Microsoft Windows Azure", "python", "c", "c++", "java", "php"],
+//     "industries": ["Alternative Dispute Resolution"],
+//     "workExperience": [{
+//         "Category": "IT Operations",
+//         "Role": "System Administrator",
+//         "Experience": 4
+//     }],
+//     "firstName": "Aravinth",
+//     "lastName": "Palaniswamy",
+//     "email": "arvi@moyyn.de",
+//     "activeJobSeeking": true,
+//     "termsAndPrivacyFlag": true,
+//     "relocationWillingnessFlag": true,
+//     "desiredEmployment": {
+//         "remote": false,
+//         "partTime": false,
+//         "fulltime": true,
+//         "freelance": false
+//     },
+//     "onlineProfiles": {
+//         "Stackoverflow": "",
+//         "LinkedIn": "",
+//         "Github": "",
+//         "Xing": "",
+//         "Dribbble": "",
+//         "Behance": "",
+//         "Other": ""
+//     },
+//     "country": "Germany",
+//     "city": "Berlin",
+//     "visaType": "Work Permit/Blue Card",
+//     "earliestJoiningDate": "06-07-2021",
+//     "currentlyEmployedFlag": false,
+//     "drivingPermitFlag": false,
+//     "contactNumber": "09442528900",
+//     "noticePeriod": null,
+//     "careerLevel": "Senior",
+//     "createdAt": {
+//         "$date": "2021-07-11T11:51:25.000Z"
+//     },
+//     "cv": {
+//         "filename": "aravinth_palaniswamy_2f419a1901de1dd2.pdf",
+//         "english": true,
+//         "german": false
+//     },
+//     "profileSecurity": {
+//         "ipHistory": [],
+//         "lastProfileUpdateAt": {
+//             "$date": "2021-07-20T08:01:35.849Z"
+//         },
+//         "lastDataRequestAt": null,
+//         "emailVerificationFlag": false,
+//         "resetPasswordFlag": false,
+//         "password": "$2a$10$ikanZOZghfZd2JvNrMw3Gu.2P4SXdgF9EY8xl.2kBlJmtTTXdf0Zu"
+//     },
+//     "helperInformation": {
+//         "source": "Node-App",
+//         "profileCompleteFlag": true,
+//         "formattedBy": "back-end",
+//         "dataVerificationFlag": true
+//     },
+//     "__v": 0
+// }

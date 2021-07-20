@@ -34,11 +34,13 @@ var isValid = async () => {
 };
 
 router.post("/jobs/crondataupdate", async (req, res, next) => {
-	var allUsers = await User.find({
-		_id: "2f419a1901de1dd2e15f7ad213bf0bc05879ea33c04dbdcc4669c5a386e6f4cf",
-	}); // check for the active field activeJobSeeking --> true
+	// _id: "2f419a1901de1dd2e15f7ad213bf0bc05879ea33c04dbdcc4669c5a386e6f4cf",
+
+	var allUsers = await User.find({}); // check for the active field activeJobSeeking --> true
 
 	allUsers = allUsers; // change this and make this for all the users
+
+	console.log(allUsers, "\nIam users\n");
 
 	try {
 		if (allUsers != null && allUsers.length > 0) {
@@ -103,7 +105,7 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 
 					var momatchResult = resp.data;
 
-					// console.log(momatchResult, "\nIam the mo match data\n\n");
+					console.log(momatchResult, "\nIam the mo match data\n\n");
 
 					var clientData = await clientFxn(momatchResult.client);
 					var partnerData = await partnerFxn(momatchResult.partner);
@@ -156,13 +158,11 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 						{ _id: prevId },
 						{ $set: c3Data }
 					);
-
 				} catch (err) {
 					console.log(
 						err.message,
 						"\nError inside the cron job in jobs cron\n\n"
 					);
-					throw new Error(err.message);
 				}
 			});
 
@@ -170,17 +170,16 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 
 			prevJobs = await jobDetails.find({});
 
-
 			var allNewJobs = await ClientJobModel.find({
 				_id: { $nin: prevJobs },
 			});
 
-			console.log(allNewJobs, "\n All the new Jobs\n");
+			console.log(allNewJobs.length, "\n\nIam the length of allnewJobs\n");
 
 			await allNewJobs.forEach(async ele => {
-				await jobDetails.create({ _id: ele._id });
+				// console.log(ele, "\n\n new job\n\n");
+				await db.collection("cronjobs").save(ele);
 			});
-
 
 			res.send({ success: true, message: "Success" });
 		}
@@ -192,7 +191,7 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 
 router.post("/jobs/cronjob", async (req, res, next) => {
 	// running in every 2 days
-	cron.schedule("*/20 * * * * *", async (req, res, next) => {
+	cron.schedule("0 0 * */3 * *", async (req, res, next) => {
 		try {
 			var check = await isValid();
 
@@ -201,7 +200,7 @@ router.post("/jobs/cronjob", async (req, res, next) => {
 
 				try {
 					try {
-						const resp = await fetch(produrl + "/jobs/crondataupdate", {
+						const resp = await fetch(localurl + "/jobs/crondataupdate", {
 							method: "POST",
 							body: { data: "tempData" },
 						});
@@ -217,7 +216,6 @@ router.post("/jobs/cronjob", async (req, res, next) => {
 			}
 		} catch (err) {
 			console.log("Error in main cron\n");
-			console.log(err);
 			res.send({
 				success: false,
 				message: "Cron job stopped due to some error",
@@ -233,10 +231,6 @@ router.post("/jobs/stopmatchmaking", async (req, res) => {
 	try {
 		var threeMonthsAgo = moment().subtract(3, "months");
 		threeMonthsAgo = threeMonthsAgo.format();
-
-		// threeMonthsAgo = isodate(threeMonthsAgo);
-
-		console.log(threeMonthsAgo, "\nIam inside stop matchmakings\n");
 
 		const query = {
 			$and: [
@@ -272,7 +266,7 @@ router.post("/jobs/stopmatchmaking", async (req, res) => {
 router.post("/jobs/deactivate", async (req, res, next) => {
 	// if anyone on the platform reg before 90 days	then switch activeJobSeeking --> false and mail them if still interested then click and activate again
 
-	cron.schedule("0 0 */1 * * *", async (req, res, next) => {
+	cron.schedule("0 0 */2 * * *", async (req, res, next) => {
 		console.log("Hi from 2 cron\n");
 		const resp = await axios.post(produrl + "/jobs/stopmatchmaking", {});
 
