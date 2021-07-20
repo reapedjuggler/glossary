@@ -458,7 +458,7 @@ router.post("/editprofile", async function (req, res) {
 					if (err) {
 						return console.log(err);
 					}
-					console.log(files);
+					console.log("English pdf Saved");
 				}
 			);
 		}
@@ -655,7 +655,7 @@ router.post("/editprofile", async function (req, res) {
 
 		jobStatisticsForC3.combined_applied_preferred = [
 			...jobStatisticsForC3.applied,
-			...jobStatisticsForC3.preffered,
+			...jobStatisticsForC3.preferred,
 		];
 
 		var c3Data = { _id: prevId, jobStatistics: jobStatisticsForC3 };
@@ -764,7 +764,7 @@ router.post("/editprofile", async function (req, res) {
 
 		res.send({ success: true, message: "Profile updated" });
 	} catch (err) {
-		// console.log(err, "\n\n----------------\nIam err\n");
+		console.log(err, "\n\n----------------\nIam err\n");
 		res.send({
 			success: false,
 			msg: "Error",
@@ -949,7 +949,7 @@ router.post("/register", async function (req, res, next) {
 	// req.connection.setTimeout(100000);
 	try {
 		var data = req.body;
-		console.log(data, " \n-------------\nIam data\n\n");
+		// console.log(data, " \n-------------\nIam data\n\n");
 		var firstName = data[0].firstname;
 		var lastName = data[0].lastname;
 		var email = data[0].email;
@@ -1200,8 +1200,6 @@ router.post("/register", async function (req, res, next) {
 		// 	"\n\n"
 		// );
 
-		// console.log("The client and partner data\n");
-
 		var newUserData = new User(userData);
 
 		// Creating the entry in C2 and C3 too
@@ -1220,7 +1218,6 @@ router.post("/register", async function (req, res, next) {
 
 		await desiredPositions.forEach(ele => {
 			// every job
-			// console.log(ele, "   ", ele[ele.length - 1], "  ", ele[ele.length - 3], "\nHehe iam ele\n");
 			if (ele[ele.length - 1] == ")") {
 				if (
 					ele[ele.length - 2] === " " &&
@@ -1230,7 +1227,6 @@ router.post("/register", async function (req, res, next) {
 					let dataFromJob = "";
 
 					for (let i = ele.length - 3; ele[i] != " "; i--) {
-						// console.log(ele[i], "   lol\n");
 						dataFromJob = ele[i] + dataFromJob;
 					}
 
@@ -1239,19 +1235,13 @@ router.post("/register", async function (req, res, next) {
 			}
 		});
 
-		// console.log(desiredJobDetails, "\n\n Iam the job codes fetched\n");
-
 		let allJobIds = [];
 
 		for (let i = 0; i < desiredJobDetails.length; i++) {
 			let jobId = await Job.findOne({ jobCode: desiredJobDetails[i] });
 
-			// console.log(jobId, " \n Iam the job id\n");
-
 			allJobIds.push(jobId._id);
 		}
-
-		// console.log(allJobIds, "\n-----------------\nIam the job ids\n");
 
 		jobStatistics.applied = allJobIds;
 
@@ -1267,14 +1257,8 @@ router.post("/register", async function (req, res, next) {
 			jobStatistics: jobStatistics,
 		});
 
-		console.log(newUserData, "\n\n Iam the data \n");
-
 		User.createUser(newUserData, (err, resp) => {
 			if (err) throw err;
-
-			console.log(resp, "\n");
-			console.log("User has been created\n");
-
 			res.send({
 				success: true,
 				candidate_id: resp._id,

@@ -157,7 +157,6 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 						{ $set: c3Data }
 					);
 
-					// console.log("Done!!!!!!!!!!!!!!\n\n");
 				} catch (err) {
 					console.log(
 						err.message,
@@ -165,14 +164,12 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 					);
 					throw new Error(err.message);
 				}
-				// console.log(updResp, " \nIam the updated Response\n");
 			});
 
 			var prevJobs = [];
 
 			prevJobs = await jobDetails.find({});
 
-			// console.log(prevJobs, "Iam the orevJob\n");
 
 			var allNewJobs = await ClientJobModel.find({
 				_id: { $nin: prevJobs },
@@ -182,10 +179,8 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 
 			await allNewJobs.forEach(async ele => {
 				await jobDetails.create({ _id: ele._id });
-				// console.log(insertedDoc, "\n\nIam the inserted Doc\n\n");
 			});
 
-			// console.log("Done!!!\n\n");
 
 			res.send({ success: true, message: "Success" });
 		}
