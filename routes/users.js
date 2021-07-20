@@ -180,7 +180,7 @@ router.post("/forgotpassword", async (req, res) => {
 
 		mail(email, tempPass, email);
 
-		console.log(resp, "  ", "\n", email, "\nIam the user after upd\n\n");
+		// console.log(resp, "  ", "\n", email, "\nIam the user after upd\n\n");
 
 		res.send({
 			success: true,
@@ -305,7 +305,7 @@ router.post("/delete", async (req, res) => {
 		const resp = await User.findOne({ _id: candidate_id });
 
 		if (resp) {
-			console.log(resp, " \n\n Iam resp");
+			// console.log(resp, " \n\n Iam resp");
 
 			// we will delete it immediately from the db
 
@@ -353,7 +353,7 @@ router.post("/getuser", async function (req, res) {
 		if (err) {
 			res.send(err);
 		}
-		console.log(user);
+		// console.log(user);
 		var result = [
 			{
 				Complete: true,
@@ -642,7 +642,7 @@ router.post("/editprofile", async function (req, res) {
 		});
 		var momatchResult = resp.data;
 
-		console.log(momatchResult, "\nIam the mo match data\n\n");
+		// console.log(momatchResult, "\nIam the mo match data\n\n");
 
 		var clientData = await clientFxn(momatchResult.client);
 		var partnerData = await partnerFxn(momatchResult.partner);
@@ -665,7 +665,7 @@ router.post("/editprofile", async function (req, res) {
 			{ $set: c3Data }
 		);
 
-		console.log(respAfterUpdFromC3, "\n\n Iam the resp from C2\n\n");
+		// console.log(respAfterUpdFromC3, "\n\n Iam the resp from C2\n\n");
 
 		// ////////////////////////////////////////////////////////////////    Updating in C2 and C3 also
 
@@ -777,7 +777,7 @@ router.post("/application", function (req, res, next) {
 
 	User.getUserByEmail(email, function (err, user) {
 		if (err) throw err;
-		console.log(user);
+		// console.log(user);
 		if (user == null) {
 			res.send({
 				success: true,
@@ -913,7 +913,7 @@ router.post("/jobs", async function (req, res) {
 
 		let resp1 = await User3.findOne({ _id: candidate_id });
 
-		console.log(resp1);
+		// console.log(resp1);
 
 		if (resp1 === null || resp1 === undefined) {
 			res.send({ success: false, message: "No user found" });
@@ -923,7 +923,7 @@ router.post("/jobs", async function (req, res) {
 		const clientData = resp1.jobStatistics.client;
 		const partnerData = resp1.jobStatistics.partner;
 
-		console.log(clientData, "     ", partnerData, "\n\n\n");
+		// console.log(clientData, "     ", partnerData, "\n\n\n");
 
 		var result = {
 			success: true,
