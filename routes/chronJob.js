@@ -58,7 +58,7 @@ router.post("/jobs/crondataupdate", async (req, res, next) => {
 
 					let desiredJobDetails = [];
 
-					if (desiredPositions !== null && desiredPositions.length > 0) {
+					if (desiredPositions != null && desiredPositions.length > 0) {
 						await desiredPositions.forEach(async ele => {
 							if (ele[ele.length - 1] == ")") {
 								if (
@@ -200,7 +200,7 @@ router.post("/jobs/cronjob", async (req, res, next) => {
 
 			console.log(check, "\nInside jobs/cronjob\n\n");
 
-			if (true) {
+			if (check) {
 				// if we have a new job we need to send notification to the user
 
 				try {
