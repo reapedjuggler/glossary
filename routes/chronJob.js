@@ -232,6 +232,8 @@ router.post("/jobs/stopmatchmaking", async (req, res) => {
 		var threeMonthsAgo = moment().subtract(3, "months");
 		threeMonthsAgo = threeMonthsAgo.format();
 
+		console.log(threeMonthsAgo, "Iam inside jobs/stopmatchmaking\n");
+
 		const query = {
 			$and: [
 				{ activeJobSeeking: true },
