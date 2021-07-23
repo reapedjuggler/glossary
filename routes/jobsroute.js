@@ -7,6 +7,23 @@ const User2 = require("../models/userModalC2");
 const User3 = require("../models/userModalC3");
 
 // Get all the jobs
+
+router.post("/jobs/allclientjobs", async function (req, res) {
+	try {
+		var data = await jobModal.find({});
+
+		res.send({
+			success: true,
+			data: data,
+		});
+	} catch (err) {
+		res.send({
+			success: false,
+			error: "Error in getting all client jobs",
+		});
+	}
+});
+
 router.post("/jobs/getalljobs", async (req, res, next) => {
 	console.log("Inside the jobs route\n");
 

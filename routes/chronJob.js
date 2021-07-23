@@ -270,7 +270,7 @@ router.post("/jobs/stopmatchmaking", async (req, res) => {
 		console.log(err, "\nIam err in deactivate\n");
 		res.send("Error in cron");
 	}
-});
+})
 
 router.post("/jobs/deactivate", async (req, res, next) => {
 	// if anyone on the platform reg before 90 days	then switch activeJobSeeking --> false and mail them if still interested then click and activate again
