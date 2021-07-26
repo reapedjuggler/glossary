@@ -99,26 +99,34 @@ router.post("/jobs/checkalreadyapplied", async (req, res) => {
 	console.log("Inside the jobs/checkalreadyapplied route\n");
 
 	try {
-		const { candidate_id, jobId } = req.body.candidate_id;
+		const { candidate_id, jobId } = req.body;
 
-		const resp = await User3.find({ _id: candidate_id });
+		var resp = await User3.find({ _id: candidate_id });
 
-		var check = false;
+		console.log(resp, "\n\n");
 
-		for (let i = 0; i < resp.jobStatistics.applied.length; i++) {
-			if (resp.jobStatistics.applied[i] == jobId) {
-				check = true;
+		if (resp != [] && resp.length > 0) {
+			resp = resp[0];
+
+			var check = false;
+
+			for (let i = 0; i < resp.jobStatistics.applied.length; i++) {
+				if (resp.jobStatistics.applied[i] == jobId) {
+					check = true;
+				}
 			}
-		}
 
-		if (check) {
-			res.send({ success: true, message: "Applied for the job" });
+			if (check === true) {
+				res.send({ success: true, message: "Already Applied for the job" });
+			} else {
+				res.send({ success: false, message: "Not Applied till now" });
+			}
 		} else {
-			res.send({ success: false, message: "Not Applied till now" });
+			res.send({ success: false, message: "No such user with that email id" });
 		}
 	} catch (err) {
 		console.log(err, "\nIam err in jobs/checkalreadyapplied");
-		res.send({ success: false, message: false });
+		res.send({ success: false, message: "Error in checking" });
 	}
 });
 
