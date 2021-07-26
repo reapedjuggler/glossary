@@ -113,6 +113,8 @@ router.post("/jobs/checkalreadyapplied", async (req, res) => {
 
 		if (check) {
 			res.send({ success: true, message: "Applied for the job" });
+		} else {
+			res.send({ success: false, message: "Not Applied till now" });
 		}
 	} catch (err) {
 		console.log(err, "\nIam err in jobs/checkalreadyapplied");
