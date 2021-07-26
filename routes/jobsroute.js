@@ -7,7 +7,6 @@ const User2 = require("../models/userModalC2");
 const User3 = require("../models/userModalC3");
 
 // Get all the jobs
-
 router.post("/jobs/allclientjobs", async function (req, res) {
 	try {
 		var data = await jobModal.find({});
@@ -24,6 +23,7 @@ router.post("/jobs/allclientjobs", async function (req, res) {
 	}
 });
 
+// Gets all the job for a particular user
 router.post("/jobs/getalljobs", async (req, res, next) => {
 	console.log("Inside the jobs route\n");
 
@@ -44,24 +44,33 @@ router.post("/jobs/applyforjob", async (req, res) => {
 	console.log("Inside the applyforjob route\n");
 
 	try {
-		const { candidate_id, jobId } = req.body.jobId;
+		const { candidate_id, jobId } = req.body;
+
+		console.log(candidate_id, "  ", jobId);
 
 		const prevResp = await User3.findOne({ _id: candidate_id });
 
-		const dataToSet = prevResp;
+		if (prevResp === null) {
+			res.send({ success: true, message: "No such user with this user id" });
+		} else {
+			const dataToSet = prevResp;
 
-		dataToSet.applied.push(jobId);
+			// console.log(dataToSet, "\n");
 
-		var temp = [];
+			dataToSet.jobStatistics.applied.push(jobId);
 
-		temp = temp.concat(dataToSet.applied);
-		temp = temp.concat(dataToSet.preffered);
+			var temp = [];
 
-		dataToSet.combined_applied_preffered.push(temp);
+			temp = [...temp, ...dataToSet.jobStatistics.applied];
 
-		await User3.findOneAndUpdate({ _id: candidate_id }, { $set: dataToSet });
+			temp = [...temp, ...dataToSet.jobStatistics.preferred];
 
-		res.send({ success: true, message: resp.client });
+			dataToSet.jobStatistics.combined_applied_preferred = temp;
+
+			await User3.findOneAndUpdate({ _id: candidate_id }, { $set: dataToSet });
+
+			res.send({ success: true, message: "Applied for job" });
+		}
 	} catch (err) {
 		res.send({ success: false, message: err.message });
 	}
@@ -74,7 +83,9 @@ router.post("/jobs/appliedjobs", async (req, res) => {
 	try {
 		const resp = await User3.findOne({ _id: req.body.candidate_id });
 
-		const appliedJobs = resp.applied;
+		const appliedJobs = resp.jobStatistics.applied;
+
+		console.log(appliedJobs, "\nIam the applied jobs\n");
 
 		res.send({ success: true, message: appliedJobs });
 	} catch (err) {
@@ -86,13 +97,74 @@ router.post("/jobs/appliedjobs", async (req, res) => {
 // Check if user has already applied for a job
 router.post("/jobs/checkalreadyapplied", async (req, res) => {
 	console.log("Inside the jobs/checkalreadyapplied route\n");
-	try {
-		const candidate_id = req.body.candidate_id;
 
-		const resp = await User1.find({ _id: candidate_id });
+	try {
+		const { candidate_id, jobId } = req.body.candidate_id;
+
+		const resp = await User3.find({ _id: candidate_id });
+
+		var check = false;
+
+		for (let i = 0; i < resp.jobStatistics.applied.length; i++) {
+			if (resp.jobStatistics.applied[i] == jobId) {
+				check = true;
+			}
+		}
+
+		if (check) {
+			res.send({ success: true, message: "Applied for the job" });
+		}
 	} catch (err) {
 		console.log(err, "\nIam err in jobs/checkalreadyapplied");
 		res.send({ success: false, message: false });
+	}
+});
+
+// Get all shortlisted jobs for a user
+router.post("/jobs/shortlistedjobs", async (req, res) => {
+	console.log("Inside the appliedjobs route\n");
+
+	try {
+		const resp = await User3.findOne({ _id: req.body.candidate_id });
+
+		const shortlistedJobs = resp.jobStatistics.shortlisted;
+
+		res.send({ success: true, message: shortlistedJobs });
+	} catch (err) {
+		console.log("Error in jobs/appliedjobs\n");
+		res.send({ success: false, message: err.message });
+	}
+});
+
+// Get all shortlisted jobs for a user
+router.post("/jobs/rejectedjobs", async (req, res) => {
+	console.log("Inside the rejectedjobs route\n");
+
+	try {
+		const resp = await User3.findOne({ _id: req.body.candidate_id });
+
+		const rejectedJob = resp.jobStatistics.rejected;
+
+		res.send({ success: true, message: rejectedJob });
+	} catch (err) {
+		console.log("Error in jobs/appliedjobs\n");
+		res.send({ success: false, message: err.message });
+	}
+});
+
+// Get all hired shortlisted jobs for a user
+router.post("/jobs/hiredjobs", async (req, res) => {
+	console.log("Inside the hired route\n");
+
+	try {
+		const resp = await User3.findOne({ _id: req.body.candidate_id });
+
+		const hired = resp.jobStatistics.hired;
+
+		res.send({ success: true, message: hired });
+	} catch (err) {
+		console.log("Error in jobs/appliedjobs\n");
+		res.send({ success: false, message: err.message });
 	}
 });
 
