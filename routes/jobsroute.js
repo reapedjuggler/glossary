@@ -39,6 +39,21 @@ router.post("/jobs/getalljobs", async (req, res, next) => {
 	}
 });
 
+router.post("/jobs/getjobwithjobid", async (req, res, next) => {
+	console.log("Inside the jobs route\n");
+
+	try {
+		const { jobId } = req.body;
+
+		const resp = await jobModal.findOne({ _id: jobId });
+
+		res.send({ success: true, message: resp });
+	} catch (err) {
+		console.log("Error in jobs/getjobwithjobId\n");
+		res.send({ success: false, message: err.message });
+	}
+});
+
 // Apply for a client job
 router.post("/jobs/applyforjob", async (req, res) => {
 	console.log("Inside the applyforjob route\n");
