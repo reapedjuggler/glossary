@@ -84,6 +84,19 @@ router.post("/jobs/applyforjob", async (req, res) => {
 
 			await User3.findOneAndUpdate({ _id: candidate_id }, { $set: dataToSet });
 
+			const prevJobData = await jobModal.findOne({ _id: jobId });
+
+			newJobData = prevJobData;
+
+			if (prevJobData.applied == undefined) {
+				newJobData.applied = [];
+				newJobData.applied.push(candidate_id);
+			} else {
+				newJobData.applied.push(candidate_id);
+			}
+
+			await jobModal.findOneAndUpdate({ _id: jobId }, { $set: newJobData });
+
 			res.send({ success: true, message: "Applied for job" });
 		}
 	} catch (err) {
@@ -189,6 +202,53 @@ router.post("/jobs/hiredjobs", async (req, res) => {
 		res.send({ success: true, message: hired });
 	} catch (err) {
 		console.log("Error in jobs/appliedjobs\n");
+		res.send({ success: false, message: err.message });
+	}
+});
+
+router.post("/jobs/filter", async (req, res) => {
+	console.log("Inside /jobs/filter");
+
+	try {
+		var { category, city, jobTitle } = req.body;
+
+		var query = {};
+
+		category.toLowerCase();
+		city.toLowerCase();
+		jobTitle.toLowerCase();
+
+		if (category == "" && city == "") {
+			query = { jobTitle: jobTitle };
+		} else if (jobTitle == "" && category == "") {
+			query = { city: city };
+		} else if (jobTitle == "" && city == "") {
+			query = { jobCategory: category };
+		} else if (category == "") {
+			query = {
+				$and: [{ jobTitle: jobTitle }, { city: city }],
+			};
+		} else if (city == "") {
+			query = {
+				$and: [{ jobTitle: jobTitle }, { jobCategory: category }],
+			};
+		} else if (jobTitle == "") {
+			query = {
+				$and: [{ city: city }, { jobCategory: category }],
+			};
+		} else {
+			query = {
+				$and: [{ city: city }, { category: category }, { jobTitle: jobTitle }],
+			};
+		}
+
+		var resp = await jobModal.find(query);
+
+		console.log("\n\n", resp);
+
+		res.send({ success: true, message: resp });
+	} catch (err) {
+		console.log("Error in jobs/filter");
 		res.send({ success: false, message: err.message });
 	}
 });
