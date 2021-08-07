@@ -86,16 +86,24 @@ router.post("/jobs/applyforjob", async (req, res) => {
 
 			const prevJobData = await jobModal.findOne({ _id: jobId });
 
-			newJobData = prevJobData;
+			const newJobData = prevJobData;
+
+			// console.log(prevJobData, "\n\nIam the new job Data\n");
 
 			if (prevJobData.applied == undefined) {
-				newJobData.applied = [];
+				// console.log("Over here\n");
 				newJobData.applied.push(candidate_id);
+				// console.log(newJobData, "\nNew job data\n");
 			} else {
+				// console.log("Over here 2\n");
 				newJobData.applied.push(candidate_id);
 			}
 
-			await jobModal.findOneAndUpdate({ _id: jobId }, { $set: newJobData });
+			await jobModal.findOneAndUpdate(
+				{ _id: jobId },
+				{ $set: newJobData },
+				{ upsert: true }
+			);
 
 			res.send({ success: true, message: "Applied for job" });
 		}
@@ -207,16 +215,20 @@ router.post("/jobs/hiredjobs", async (req, res) => {
 });
 
 router.post("/jobs/filter", async (req, res) => {
+	
 	console.log("Inside /jobs/filter");
 
 	try {
+
 		var { category, city, jobTitle } = req.body;
 
 		var query = {};
 
-		category.toLowerCase();
-		city.toLowerCase();
-		jobTitle.toLowerCase();
+		// category.toLowerCase();
+		// city.toLowerCase();
+		// jobTitle.toLowerCase();
+
+		// Backend Developer
 
 		if (category == "" && city == "") {
 			query = { jobTitle: jobTitle };
@@ -244,7 +256,7 @@ router.post("/jobs/filter", async (req, res) => {
 
 		var resp = await jobModal.find(query);
 
-		console.log("\n\n", resp);
+		// console.log("\n\n", resp);
 
 		res.send({ success: true, message: resp });
 	} catch (err) {

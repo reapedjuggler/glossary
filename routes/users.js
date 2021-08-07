@@ -1257,6 +1257,32 @@ router.post("/register", async function (req, res, next) {
 			jobStatistics: jobStatistics,
 		});
 
+		// for (let i = 0; i < desiredJobDetails.length; i++) {
+		// 	let jobId = await Job.findOne({ jobCode: desiredJobDetails[i] });
+
+		// 	allJobIds.push(jobId._id);
+		// }
+
+		// console.log(allJobIds, "\nIam all jobsIds\n");
+
+		for (let i = 0; i < allJobIds.length; i++) {
+			const prevJobData = await ClientJobs.findOne({ _id: allJobIds[i] });
+
+			const newJobData = prevJobData;
+
+			console.log(newJobData, "\nIam the new job Data\n");
+
+			if (prevJobData.applied == undefined) {
+				newJobData.applied.push(candidate_id);
+			} else {
+				newJobData.applied.push(candidate_id);
+			}
+
+			console.log(newJobData, "\nIam the new job Data\n");
+
+			await jobModal.findOneAndUpdate({ _id: jobId }, { $set: newJobData });
+		}
+
 		User.createUser(newUserData, (err, resp) => {
 			if (err) throw err;
 			res.send({

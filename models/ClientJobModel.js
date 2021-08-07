@@ -20,6 +20,9 @@ var ClientJobSchema = mongoose.Schema({
 	shortlisted: {
 		type: Array,
 	},
+	applied: {
+		type: Array,
+	},
 	hired: {
 		type: Array,
 	},
