@@ -215,11 +215,9 @@ router.post("/jobs/hiredjobs", async (req, res) => {
 });
 
 router.post("/jobs/filter", async (req, res) => {
-	
 	console.log("Inside /jobs/filter");
 
 	try {
-
 		var { category, city, jobTitle } = req.body;
 
 		var query = {};
@@ -238,7 +236,9 @@ router.post("/jobs/filter", async (req, res) => {
 			query = { jobCategory: category };
 		} else if (category == "") {
 			query = {
-				$and: [{ jobTitle: jobTitle }, { city: city }],
+				// jobTitle: { $regex: jobTitle, $options: "i" },
+				jobTitle: new RegExp(jobTitle, 'i'),
+				city: city,
 			};
 		} else if (city == "") {
 			query = {
