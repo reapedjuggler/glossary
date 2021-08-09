@@ -228,6 +228,10 @@ router.post("/jobs/filter", async (req, res) => {
 
 		// Backend Developer
 
+		// if (jobTitle != undefined && jobTitle != "") {
+		// 	jobTitle = `/${jobTitle}/`;
+		// }
+
 		if (category == "" && city == "") {
 			query = { jobTitle: jobTitle };
 		} else if (jobTitle == "" && category == "") {
@@ -237,20 +241,24 @@ router.post("/jobs/filter", async (req, res) => {
 		} else if (category == "") {
 			query = {
 				// jobTitle: { $regex: jobTitle, $options: "i" },
-				jobTitle: new RegExp(jobTitle, 'i'),
+				jobTitle: new RegExp(jobTitle, "i"),
 				city: city,
 			};
 		} else if (city == "") {
 			query = {
-				$and: [{ jobTitle: jobTitle }, { jobCategory: category }],
+				jobTitle: new RegExp(jobTitle, "i"),
+				jobCategory: category,
 			};
 		} else if (jobTitle == "") {
 			query = {
-				$and: [{ city: city }, { jobCategory: category }],
+				city: city,
+				jobCategory: category,
 			};
 		} else {
 			query = {
-				$and: [{ city: city }, { category: category }, { jobTitle: jobTitle }],
+				city: city,
+				category: category,
+				jobTitle: new RegExp(jobTitle, "i"),
 			};
 		}
 
