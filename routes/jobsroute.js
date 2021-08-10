@@ -233,7 +233,7 @@ router.post("/jobs/filter", async (req, res) => {
 		// }
 
 		if (category == "" && city == "") {
-			query = { jobTitle: jobTitle };
+			query = { jobTitle: new RegExp(jobTitle, "i") };
 		} else if (jobTitle == "" && category == "") {
 			query = { city: city };
 		} else if (jobTitle == "" && city == "") {
