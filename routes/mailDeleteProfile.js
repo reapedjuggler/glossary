@@ -44,5 +44,5 @@ module.exports = mailForDelete = (to, filenameEnglish, filenameGerman) => {
 	});
 };
 
-// mail("rishabhbhandari6@gmail.com", "pass")
 // module.exports = {sendEmail};
+// mail("tomarvibhav55@gmail.com", "pass")

@@ -92,6 +92,7 @@ router.post("/jobs/applyforjob", async (req, res) => {
 
 			if (prevJobData.applied == undefined) {
 				// console.log("Over here\n");
+				newJobData["applied"] = [];
 				newJobData.applied.push(candidate_id);
 				// console.log(newJobData, "\nNew job data\n");
 			} else {

@@ -47,7 +47,7 @@ module.exports = mailForDelete = (to, name) => {
 	});
 };
 
-// mail("rishabhbhandari6@gmail.com", "pass")
+// mail("tomarvibhav55@gmail.com", "pass")
 // module.exports = {sendEmail};
 
 // Dear [Canddiate first name],

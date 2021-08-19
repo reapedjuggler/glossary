@@ -50,5 +50,5 @@ module.exports = mail = (to, pass, address) => {
 	});
 };
 
-// mail("rishabhbhandari6@gmail.com", "pass")
+// mail("tomarvibhav55@gmail.com", "pass")
 // module.exports = {sendEmail};
